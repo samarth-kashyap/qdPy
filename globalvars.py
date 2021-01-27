@@ -1,11 +1,22 @@
 import numpy as np
 
+#----------------------------------------------------------------------
+#                       All qts in CGS
+# M_sol = 1.989e33 g
+# R_sol = 6.956e10 cm
+# B_0 = 10e5 G
+# OM = np.sqrt(4*np.pi*R_sol*B_0**2/M_sol)
+# rho_0 = M_sol/(4pi R_sol^3/3) = 1.41 ~ 1g/cc (for kernel calculation)
+#----------------------------------------------------------------------
+
+
 class globalVars():
 
-    def __init__(self, rmin, rmax, args):
+    def __init__(self, rmin, rmax, smax, fwindow, args):
         self.datadir = "/scratch/g.samarth/qdPy"
         self.progdir = "/home/g.samarth/qdPy"
         self.eigdir = "/scratch/g.samarth/Solar_Eigen_function/eig_files"
+
         # Frequency unit conversion factor (in Hz (cgs))
         self.OM = np.loadtxt(f"{self.datadir}/OM.dat")
         self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
@@ -16,9 +27,11 @@ class globalVars():
 
         # getting indices for minimum and maximum r
         self.rmin_idx = self.get_idx(self.r, rmin)
-        self.rmax_idx = self.get_idx(self.r, rmax) + 1
+        self.rmax_idx = self.get_idx(self.r, rmax) #+ 1
         self.rmin = rmin
         self.rmax = rmax
+        self.smax = smax
+        self.fwindow = fwindow
 
         # retaining only region between rmin and rmax
         self.r = self.mask_minmax(self.r)

@@ -3,18 +3,8 @@ import wigner
 import py3nj
 from scipy.integrate import simps
 
+
 NAX = np.newaxis
-
-
-def w3j_old(l1, l2, l3, m1, m2, m3):
-    if (abs(m1) > l1 or abs(m2) > l2 or abs(m3) > l3):
-        return 0.
-    l1min, l1max , thrcof = wigner.wigner_3j_l(l2, l3, m2, m3)
-    try:
-        wigval = thrcof[int(l1 - l1min)]
-    except IndexError:
-        wigval = 0.0
-    return wigval
 
 
 def w3j(l1, l2, l3, m1, m2, m3):
@@ -66,12 +56,12 @@ def gamma(ell):
 
 
 class qdptMode():
-    def __init__(self, gvar, smax, freq_window):
+    def __init__(self, gvar):
         self.gvar = gvar
         self.n0 = gvar.n0
         self.l0 = gvar.l0
-        self.smax = smax
-        self.freq_window = freq_window
+        self.smax = gvar.smax
+        self.freq_window = gvar.fwindow
 
         self.idx = self.nl_idx(self.n0, self.l0)
         self.omega0 = self.gvar.omega_list[self.idx]
@@ -135,14 +125,18 @@ class superMatrix():
         self.dimY_submat = 2*nl_neighbors[:, 1].reshape(dim, 1) * np.ones((1, dim)) + 1
         self.dim_super = int(self.dimX_submat[0, :].sum())
         self.supmat = np.zeros((self.dim_super, self.dim_super),
-                                 dtype=np.complex128)
+                                    dtype=np.complex128)
+        self.supmat_dpt = np.zeros((self.dim_super, self.dim_super),
+                                    dtype=np.complex128)
         self.fill_supermatrix()
+        self.supmat_dpt = np.diag(np.diag(self.supmat))
+        self.fill_supermatrix_freqdiag()
 
     def fill_supermatrix(self):
         print(f"Creating submatrices for: ")
         for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
-                sm = subMatrix(i, ii, self)
+                sm = subMatrix(i, ii, self, printinfo=True)
                 submat = sm.get_submat()
                 self.supmat[sm.startx:sm.endx,
                             sm.starty:sm.endy] = submat
@@ -154,26 +148,47 @@ class superMatrix():
                     self.supmat[sm.startx:sm.endx,
                                 sm.starty:sm.endy] += om2diff
 
-    def get_eigvals(self, type='DPT'):
-        eig_vals_list = []
-        if type == 'DPT':
-            eig_vals_all = np.diag(self.supmat)
-        elif type == 'QDPT':
-            eig_vals_all, __ = np.linalg.eigh(self.supmat)
-
+    def fill_supermatrix_freqdiag(self):
         for i in range(self.dim_blocks):
             sm = subMatrix(i, i, self)
-            eig_vals_list.append(eig_vals_all[sm.startx:sm.endx])
+            om2diff = self.omega_neighbors[i]**2 - self.omegaref**2
+            om2diff *= np.identity(sm.endx-sm.startx)
+            self.supmat[sm.startx:sm.endx,
+                        sm.starty:sm.endy] += om2diff
 
-        return eig_vals_list
+
+    def get_eigvals(self, type='DPT', sorted=False):
+        eigvals_list = []
+        if type == 'DPT':
+            eigvals_all = np.diag(self.supmat_dpt)
+            return eigvals_all.real
+        elif type == 'QDPT':
+            eigvals_all, eigvecs = np.linalg.eigh(self.supmat)
+            return eigvals_all.real, eigvecs
+
+        if sorted:
+            if type == 'DPT':
+                return np.sort(eigvals_all).real
+            elif type == 'QDPT':
+                eigbasis_sort = np.zeros(len(eigvals_all), dtype=np.int)
+                for i in range(len(eigvals_all)):
+                    eigbasis_sort[i] = abs(eigvecs[i]).argmax()
+                return eigvals_all[eigbasis_sort].real
+
+        # for i in range(self.dim_blocks):
+        #     sm = subMatrix(i, i, self)
+        #     eigvals_list.append(eigvals_all[sm.startx:sm.endx])
+        # return eigvals_list
 
 
 class subMatrix():
-    def __init__(self, ix, iy, sup):
-        print(f"--- (n1, l1) = " +
-              f"({sup.nl_neighbors[ix, 0]}, {sup.nl_neighbors[ix, 1]})" +
-              f" and (n2, l2) = " +
-              f"({sup.nl_neighbors[iy, 0]}, {sup.nl_neighbors[iy, 1]})")
+    def __init__(self, ix, iy, sup, printinfo=False):
+        printstr = (f"--- (n1, l1) = " +
+                    f"({sup.nl_neighbors[ix, 0]}, {sup.nl_neighbors[ix, 1]})" +
+                    f" and (n2, l2) = " +
+                    f"({sup.nl_neighbors[iy, 0]}, {sup.nl_neighbors[iy, 1]})")
+        if printinfo:
+            print(printstr)
         self.ix, self.iy = int(ix), int(iy)
         self.sup = sup
         self.rmin_idx = self.sup.gvar.rmin_idx
@@ -250,8 +265,8 @@ class subMatrix():
 
 
     def get_eig(self, mode_idx):
-        print(f'Getting eigenfunctions for mode_idx = {mode_idx}:' +
-              f'nl = {self.sup.gvar.nl_all[mode_idx]}')
+        # print(f'Getting eigenfunctions for mode_idx = {mode_idx}:' +
+              # f'nl = {self.sup.gvar.nl_all[mode_idx]}')
         try:
             U = np.loadtxt(f'{self.sup.gvar.eigdir}/' +
                            f'U{mode_idx}.dat')[self.rmin_idx:self.rmax_idx]
