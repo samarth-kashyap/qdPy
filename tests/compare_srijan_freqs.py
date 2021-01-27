@@ -21,9 +21,12 @@ if __name__ == "__main__":
     print(f'sum(diff) QDPT = {diffsum_qdpt}')
     print(f'sum(diff) DPT = {diffsum_dpt}')
 
-    plt.figure()
+    plt.figure(figsize=(3, 7))
+    plt.subplot(211)
     plt.plot(qdpt_sgk - qdpt_sri, 'r', label='QDPT diff')
     plt.plot(dpt_sgk - dpt_sri, 'b', label='DPT diff')
+
+    plt.subplot(212)
     plt.plot(qdpt_sgk - dpt_sgk, '--k', label='QDPT - DPT (sgk)')
     plt.plot(qdpt_sri - dpt_sri, '--g', label='QDPT - DPT (sri)')
     plt.legend()
