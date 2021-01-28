@@ -32,7 +32,14 @@ class ritzLavelyPoly():
                 P1j = P2j - (cj[:, NAX] * self.Pjl[:j, :]).sum(axis=0)
                 self.Pjl[j, :] += self.ell * P1j/P1j[-1]
             self.Pjl_exists = True
+            # self.normalize_Pjl()
             return self.Pjl
+
+    def normalize_Pjl(self):
+        norms = np.zeros(self.Pjl.shape[0])
+        for i in range(len(norms)):
+            norms[i] = np.sqrt(self.Pjl[i, :] @ self.Pjl[i, :])
+        self.Pjl = self.Pjl / norms[:, NAX]
 
     def get_coeffs(self, arrm):
         if not self.Pjl_exists:
@@ -40,3 +47,7 @@ class ritzLavelyPoly():
         assert len(arrm) == len(self.m), "Length of input array =/= 2*ell+1"
         aj = self.Pjl @ arrm
         return aj
+
+    def polyval(self, acoeffs):
+        assert len(acoeffs) == self.jmax, "Number of coeffs =/= jmax"
+        return (acoeffs[:, NAX] * self.Pjl).sum(axis=0)

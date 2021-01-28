@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import qdclasses as qdcls
+import ritzlavely as RL
 import globalvars
 import logging
 import argparse
@@ -73,6 +74,12 @@ def get_cenmode_freqs_dpt(eigvals):
     # return eigvals
 
 
+def get_RL_coeffs(rlpObj, omega_nlm):
+    delta_omega_nlm = omega_nlm - analysis_modes.omega0*gvar.OM*1e6
+    rlpObj.get_Pjl()
+    acoeffs = rlpObj.get_coeffs(delta_omega_nlm)
+    return acoeffs
+
 
 analysis_modes = qdcls.qdptMode(gvar)
 super_matrix = analysis_modes.create_supermatrix()
@@ -97,6 +104,14 @@ fqdpt *= gvar.OM * 1e6
 
 np.save(f'{gvar.datadir}/new_freqs/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
 np.save(f'{gvar.datadir}/new_freqs/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
+
+rlp = RL.ritzLavelyPoly(args.l0, 12)
+
+acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])
+acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])
+print(f"QDPT a-coeffs = {acoeffs_qdpt}")
+print(f" DPT a-coeffs = {acoeffs_dpt}")
+
 
 plt.plot(fqdpt, 'r')
 plt.plot(fdpt, 'b')
