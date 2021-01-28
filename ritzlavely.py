@@ -8,13 +8,13 @@ class ritzLavelyPoly():
 
     def __init__(self, ell, jmax):
         assert ell > 0, "Ritzwoller-Lavely polynomials don't exist for ell=0"
-        assert jmax <= 2*ell, "Max degree (jmax) should be smaller than 2*ell"
+        assert jmax + 1 <= 2*ell, "Max degree (jmax) should be smaller than 2*ell"
         self.ell = ell
-        self.jmax = jmax
+        self.jmax = jmax + 1
         self.m = np.arange(-ell, ell+1) * 1.0
         self.L = np.sqrt(ell*(ell+1))
         self.m_by_L = self.m/self.L
-        self.Pjl = np.zeros((jmax, len(self.m)), dtype=np.float64)
+        self.Pjl = np.zeros((self.jmax, len(self.m)), dtype=np.float64)
         self.Pjl_exists = False
 
     def get_Pjl(self):
@@ -49,5 +49,6 @@ class ritzLavelyPoly():
         return aj
 
     def polyval(self, acoeffs):
-        assert len(acoeffs) == self.jmax, "Number of coeffs =/= jmax"
+        assert len(acoeffs) == self.jmax, (f"Number of coeffs ({len(acoeffs)} " +
+                                           f"=/= jmax ({self.jmax})")
         return (acoeffs[:, NAX] * self.Pjl).sum(axis=0)
