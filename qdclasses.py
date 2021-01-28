@@ -238,7 +238,7 @@ class subMatrix():
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/w_const.dat')\
         #     [:, self.rmin_idx:self.rmax_idx]/2.0 * (-1.0)
         wsr = np.loadtxt(f'{self.sup.gvar.datadir}/w.dat')\
-            [:, self.rmin_idx:self.rmax_idx]
+            [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
         integral = simps(integrand, axis=1, x=self.sup.gvar.r)
         prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)

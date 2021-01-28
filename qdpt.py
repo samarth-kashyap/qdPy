@@ -81,10 +81,18 @@ def get_RL_coeffs(rlpObj, omega_nlm):
     return acoeffs
 
 
+def store_offset():
+    domega_QDPT = np.linalg.norm(fqdpt - analysis_modes.omega0*gvar.OM*1e6)
+    domega_DPT = np.linalg.norm(fdpt - analysis_modes.omega0*gvar.OM*1e6)
+    rel_offset_percent = np.abs((domega_QDPT-domega_DPT)/domega_DPT) * 100.0
+    np.savetxt(f"{gvar.datadir}/qdpt_error/offsets_{args.n0:02d}_{args.l0:03d}.dat",
+            np.array([rel_offset_percent]))
+    return 0
+
+
+
 analysis_modes = qdcls.qdptMode(gvar)
 super_matrix = analysis_modes.create_supermatrix()
-# eigvals_dpt_unsorted = super_matrix.get_eigvals(type='DPT')
-# eigvals_qdpt_unsorted = super_matrix.get_eigvals(type='QDPT')
 eigvals_dpt_unsorted = super_matrix.get_eigvals(type='DPT', sorted=False)
 eigvals_qdpt_unsorted, eigvecs_qdpt = super_matrix.get_eigvals(type='QDPT', sorted=False)
 
@@ -92,11 +100,8 @@ eigvals_cenmode_dpt = get_cenmode_freqs_dpt(eigvals_dpt_unsorted)
 eigvals_cenmode_qdpt, eigvecs_qdpt = get_cenmode_freqs_qdpt(eigvals_qdpt_unsorted,
                                               eigvecs_qdpt)
 
-# ??
 fqdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_cenmode_qdpt)
 fdpt = (analysis_modes.omega0 + eigvals_cenmode_dpt/2/analysis_modes.omega0)
-# fqdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_qdpt_unsorted)
-# fdpt = (analysis_modes.omega0 + eigvals_dpt_unsorted/2/analysis_modes.omega0)
 
 # converting to muHz
 fdpt *= gvar.OM * 1e6
@@ -104,14 +109,17 @@ fqdpt *= gvar.OM * 1e6
 
 np.save(f'{gvar.datadir}/new_freqs/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
 np.save(f'{gvar.datadir}/new_freqs/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
+store_offset()
 
+"""
 rlp = RL.ritzLavelyPoly(args.l0, 12)
 
 acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])
 acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])
 print(f"QDPT a-coeffs = {acoeffs_qdpt}")
 print(f" DPT a-coeffs = {acoeffs_dpt}")
+"""
 
 
-plt.plot(fqdpt, 'r')
-plt.plot(fdpt, 'b')
+# plt.plot(fqdpt, 'r')
+# plt.plot(fdpt, 'b')

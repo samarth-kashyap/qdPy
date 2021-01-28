@@ -2,3 +2,4 @@
 *.dat
 notebooks/.ipynb_checkpoints/*
 __pycache__
+jobscripts/ipjobs*
