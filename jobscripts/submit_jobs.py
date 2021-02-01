@@ -1,5 +1,5 @@
 import os
-for n in range(25):
+for n in range(30):
     fname = f"gnup_qdpy_{n:02d}.sh"
     with open(fname, "w") as f:
         f.write("#!/bin/bash\n")

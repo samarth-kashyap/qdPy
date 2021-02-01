@@ -45,7 +45,7 @@ class ritzLavelyPoly():
         if not self.Pjl_exists:
             self.get_Pjl()
         assert len(arrm) == len(self.m), "Length of input array =/= 2*ell+1"
-        aj = self.Pjl @ arrm
+        aj = (self.Pjl @ arrm) / np.diag(self.Pjl @ self.Pjl.T)
         return aj
 
     def polyval(self, acoeffs):

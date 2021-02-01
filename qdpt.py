@@ -93,6 +93,7 @@ def store_offset():
 
 analysis_modes = qdcls.qdptMode(gvar)
 super_matrix = analysis_modes.create_supermatrix()
+np.save('/scratch/g.samarth/qdPy/supermat_00_200.npy', super_matrix.supmat)
 eigvals_dpt_unsorted = super_matrix.get_eigvals(type='DPT', sorted=False)
 eigvals_qdpt_unsorted, eigvecs_qdpt = super_matrix.get_eigvals(type='QDPT', sorted=False)
 
@@ -100,8 +101,8 @@ eigvals_cenmode_dpt = get_cenmode_freqs_dpt(eigvals_dpt_unsorted)
 eigvals_cenmode_qdpt, eigvecs_qdpt = get_cenmode_freqs_qdpt(eigvals_qdpt_unsorted,
                                               eigvecs_qdpt)
 
-fqdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_cenmode_qdpt)
 fdpt = (analysis_modes.omega0 + eigvals_cenmode_dpt/2/analysis_modes.omega0)
+fqdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_cenmode_qdpt)
 
 # converting to muHz
 fdpt *= gvar.OM * 1e6

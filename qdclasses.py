@@ -1,8 +1,8 @@
 import numpy as np
 import wigner
 import py3nj
-from scipy.integrate import simps
-# from scipy.integrate import trapz as simps 
+# from scipy.integrate import simps
+from scipy.integrate import trapz as simps 
 
 
 NAX = np.newaxis
@@ -15,7 +15,10 @@ def w3j(l1, l2, l3, m1, m2, m3):
     m1 = int(2*m1)
     m2 = int(2*m2)
     m3 = int(2*m3)
-    wigval = py3nj.wigner3j(l1, l2, l3, m1, m2, m3)
+    try:
+        wigval = py3nj.wigner3j(l1, l2, l3, m1, m2, m3)
+    except ValueError:
+        return 0.0
     return wigval
 
 
@@ -99,7 +102,8 @@ class qdptMode():
         mask_omega = abs(omega_diff) <= self.freq_window
         mask_ell = abs(nl_all[:, 1] - self.l0) <= self.smax
         mask_nb = mask_omega * mask_ell
-        self.nl_neighbors = nl_all[mask_nb]
+        sort_idx = np.argsort(abs(omega_diff[mask_nb]))
+        self.nl_neighbors = nl_all[mask_nb][sort_idx]
         self.nl_neighbors_idx = self.nl_idx_vec(self.nl_neighbors)
         self.omega_neighbors = self.get_omega_neighbors(self.nl_neighbors_idx)
         self.num_neighbors = len(self.nl_neighbors_idx)
@@ -143,11 +147,6 @@ class superMatrix():
                             sm.starty:sm.endy] = submat
                 self.supmat[sm.starty:sm.endy,
                             sm.startx:sm.endx] = submat.T.conj()
-                if i == ii:
-                    om2diff = self.omega_neighbors[i]**2 - self.omegaref**2
-                    om2diff *= np.identity(sm.endx-sm.startx)
-                    self.supmat[sm.startx:sm.endx,
-                                sm.starty:sm.endy] += om2diff
 
     def fill_supermatrix_freqdiag(self):
         for i in range(self.dim_blocks):
