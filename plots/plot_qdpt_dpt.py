@@ -49,7 +49,7 @@ def plot_both(enn, ell):
 
 
 if __name__ == "__main__":
-    cwd = "/scratch/g.samarth/Solar_Eigen_function/new_freqs"
+    cwd = "/scratch/g.samarth/Solar_Eigen_function/new_freqs_full"
     enn, ell = args.n, args.l
     freqs, diffs, fig = plot_both(enn, ell)
     qdpt, dpt = freqs

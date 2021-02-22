@@ -85,7 +85,7 @@ def store_offset():
     domega_QDPT = np.linalg.norm(fqdpt - analysis_modes.omega0*gvar.OM*1e6)
     domega_DPT = np.linalg.norm(fdpt - analysis_modes.omega0*gvar.OM*1e6)
     rel_offset_percent = np.abs((domega_QDPT-domega_DPT)/domega_DPT) * 100.0
-    np.savetxt(f"{gvar.datadir}/qdpt_error/offsets_{args.n0:02d}_{args.l0:03d}.dat",
+    np.savetxt(f"{gvar.datadir}/qdpt_error_full/offsets_{args.n0:02d}_{args.l0:03d}.dat",
             np.array([rel_offset_percent]))
     return 0
 
@@ -102,25 +102,28 @@ eigvals_cenmode_qdpt, eigvecs_qdpt = get_cenmode_freqs_qdpt(eigvals_qdpt_unsorte
                                               eigvecs_qdpt)
 
 fdpt = (analysis_modes.omega0 + eigvals_cenmode_dpt/2/analysis_modes.omega0)
-fqdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_cenmode_qdpt)
+fqdpt = (analysis_modes.omega0 + eigvals_cenmode_qdpt/2/analysis_modes.omega0)
+# fdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_cenmode_dpt)
+# fqdpt = np.sqrt(analysis_modes.omega0**2 + eigvals_cenmode_qdpt)
 
 # converting to muHz
 fdpt *= gvar.OM * 1e6
 fqdpt *= gvar.OM * 1e6
 
-np.save(f'{gvar.datadir}/new_freqs/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
-np.save(f'{gvar.datadir}/new_freqs/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
+np.save(f'{gvar.datadir}/new_freqs_full/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
+np.save(f'{gvar.datadir}/new_freqs_full/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
 store_offset()
 
-"""
 rlp = RL.ritzLavelyPoly(args.l0, 12)
 
-acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])
-acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])
+acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])*1e3
+acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])*1e3
 print(f"QDPT a-coeffs = {acoeffs_qdpt}")
 print(f" DPT a-coeffs = {acoeffs_dpt}")
-"""
-
+np.save(f'{gvar.datadir}/new_freqs_full/qdpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy',
+        acoeffs_qdpt)
+np.save(f'{gvar.datadir}/new_freqs_full/qdpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy',
+        acoeffs_dpt)
 
 # plt.plot(fqdpt, 'r')
 # plt.plot(fdpt, 'b')

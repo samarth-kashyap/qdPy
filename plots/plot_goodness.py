@@ -12,6 +12,7 @@ import functions as fn
 datadir = "/scratch/g.samarth/qdPy"
 OM = np.loadtxt(f'{datadir}/OM.dat') #importing normalising frequency value from file (in Hz (cgs))
 omega_list = np.loadtxt(f'{datadir}/muhz.dat') * 1e-6 / OM #normlaised frequency list
+nmin = 0
 
 font = {'family' : 'normal',
 'weight' : 'normal',
@@ -51,7 +52,7 @@ def collect_multiplets(n):
     for ell in l_arr:
         try:
             # gdns = np.loadtxt(f"{datadir}/Cross_coupling_goodness/" +
-            gdns = np.loadtxt(f"{datadir}/qdpt_error/" +
+            gdns = np.loadtxt(f"{datadir}/qdpt_error_full/" +
                             f"offsets_{n:02d}_{ell:03d}.dat")
             # print(f" n = {n}, ell = {ell}, rop = {gdns}")
         except OSError:
@@ -74,7 +75,7 @@ vmax = 0.0
 vmin = 100000000000
 
 print(f"Computing vmin, vmax...")
-for n0 in range(nmax+1):
+for n0 in range(nmin, nmax+1):
     print(f"-- n = {n0}")
     qdpt_contrib_rel, nl_list = collect_multiplets(n0)
     qdpt_contrib_rel = np.ma.masked_greater(qdpt_contrib_rel,90) 
@@ -89,7 +90,7 @@ lmax = 0
 # vmin *= 10
 print(f"Plotting ...")
 fig, ax = plt.subplots(1, figsize=(10, 5), dpi=200, facecolor='w', edgecolor='k')
-for n0 in range(nmax+1):
+for n0 in range(nmin, nmax+1):
     print(f"-- Appending n = {n0}")
     qdpt_contrib_rel, nl_list = collect_multiplets(n0)
     qdpt_contrib_rel = np.ma.masked_greater(qdpt_contrib_rel,90) 
@@ -105,7 +106,6 @@ for n0 in range(nmax+1):
     l = nl_list[:,1]    #isolating the \ell's
 
     omega_nl = np.array([omega_list[fn.find_nl(mode[0], mode[1])] for mode in nl_list]) #important to have nl_list as integer type
-
     im = ax.scatter(l,omega_nl*OM*1e6/1e3, s=5, #size,
                     c=colors_norm, linewidth=0.5, #edgecolor='k',
                     # cmap='binary', vmin=vmin, vmax=vmax, alpha = 1.0)

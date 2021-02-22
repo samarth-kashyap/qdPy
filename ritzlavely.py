@@ -5,7 +5,6 @@ import numpy.polynomial.legendre as npleg
 NAX = np.newaxis
 
 class ritzLavelyPoly():
-
     def __init__(self, ell, jmax):
         assert ell > 0, "Ritzwoller-Lavely polynomials don't exist for ell=0"
         assert jmax + 1 <= 2*ell, "Max degree (jmax) should be smaller than 2*ell"

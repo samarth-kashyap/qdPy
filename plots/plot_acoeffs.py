@@ -10,6 +10,7 @@ imax = 6
 datadir = '/scratch/g.samarth/qdPy'
 data = np.loadtxt('/home/g.samarth/Woodard2013/WoodardPy/HMI/hmi.6328.36')
 fig, axs = plt.subplots(ncols=2, nrows=int(imax//2), figsize=(7, int(7*imax//4)))
+fig2, axs2 = plt.subplots(ncols=2, nrows=int(imax), figsize=(7, int(3*imax)))
 
 def get_acoeffs_list(n, imax):
     ac_n_qdpt = []
@@ -37,8 +38,8 @@ def get_acoeffs_list(n, imax):
         # print(f"Computing a-coeffs for n = {n}, ell = {ell}")
         count = 0
         try:
-            fqdpt = np.load(f"{datadir}/new_freqs/qdpt_{n:02d}_{ell:03d}.npy")
-            fdpt = np.load(f"{datadir}/new_freqs/dpt_{n:02d}_{ell:03d}.npy")
+            fqdpt = np.load(f"{datadir}/new_freqs_full/qdpt_{n:02d}_{ell:03d}.npy")
+            fdpt = np.load(f"{datadir}/new_freqs_full/dpt_{n:02d}_{ell:03d}.npy")
         except FileNotFoundError:
             count += 1
             pass
@@ -78,11 +79,52 @@ def plot_acoeff_error(ac_qdpt, ac_dpt, larr):
     return fig
 
 
-for n in range(7):
-    ac_qdpt, ac_dpt, larr = get_acoeffs_list(n, 6)
-    fig = plot_acoeff_error(ac_qdpt, ac_dpt, larr)
-handles, labels = axs.flatten()[0].get_legend_handles_labels()
-fig.legend(handles[:3], labels[:3], loc='upper center')
-fig.tight_layout()
-fig.subplots_adjust(top=0.85)
-fig.show()
+def plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr):
+    if len(ac_qdpt) == 0:
+        return fig2
+    maskn = data[:, 1] == n
+    elldata = data[:, 0][maskn]
+    splitdata = data[maskn, 12:12+imax]
+    sigdata = data[maskn, 48:48+imax]
+    for i in range(imax):
+        axs2[i, 0].plot(larr, ac_qdpt[:, i], 'r', markersize=0.7,
+                       label='QDPT')
+        axs2[i, 0].plot(larr, ac_dpt[:, i], 'b', markersize=0.7,
+                       label='DPT')
+        ac_dpt[abs(ac_dpt[:, i])<1e-15, i] = 1e-15
+        axs2[i, 0].set_title(f'a{i+1} in nHz')
+        diff = (ac_qdpt[:, i] - ac_dpt[:, i])
+        perr = (diff)*100/ac_dpt[:, i]
+        perr_data = sigdata[:, i]/splitdata[:, i]*100
+        diff_data = sigdata[:, i]
+        # if i%2 == 0:
+        #     axs2[i, 1].plot(larr, perr, 'k', markersize=0.8, label='error qdpt vs dpt')
+        #     axs2[i, 1].plot(elldata, perr_data, '+k', markersize=0.8, label='uncertainty in HMI data')
+        #     axs2[i, 1].set_title(f'% Error in a{i+1}')
+        # else:
+        axs2[i, 1].plot(larr, diff, 'k', markersize=0.8, label='error qdpt vs dpt')
+        # axs2[i, 1].plot(elldata, diff_data, '+k', markersize=0.8, label='uncertainty in HMI data')
+        axs2[i, 1].fill_between(elldata, -diff_data, diff_data, alpha=0.5, label='uncertainty in HMI data')
+        axs2[i, 1].set_title(f'Error in a{i+1} in nHz')
+        axs2[i, 0].set_xlabel('$\\ell$', fontsize=18)
+        axs2[i, 1].set_xlabel('$\\ell$', fontsize=18)
+        # axs2.flatten()[i].set_xlim([2, 100])
+    return fig2
+
+
+
+for n in range(2):
+    ac_qdpt, ac_dpt, larr = get_acoeffs_list(n, imax)
+    # fig = plot_acoeff_error(ac_qdpt, ac_dpt, larr)
+    fig2 = plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr)
+# handles, labels = axs.flatten()[0].get_legend_handles_labels()
+handles2, labels2 = axs2.flatten()[0].get_legend_handles_labels()
+# fig.legend(handles[:3], labels[:3], loc='upper center')
+# fig.tight_layout()
+# fig.subplots_adjust(top=0.85)
+fig2.legend(handles2[:2], labels2[:2], loc='upper center')
+fig2.tight_layout()
+fig2.subplots_adjust(top=0.95)
+#fig.show()
+# fig.savefig('/scratch/g.samarth/plots/acoeffs.pdf')
+fig2.savefig('/scratch/g.samarth/plots/acoeffs_error.pdf')
