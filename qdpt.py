@@ -75,9 +75,11 @@ def get_cenmode_freqs_dpt(eigvals):
 
 
 def get_RL_coeffs(rlpObj, omega_nlm):
-    delta_omega_nlm = omega_nlm - analysis_modes.omega0*gvar.OM*1e6
+    # delta_omega_nlm = omega_nlm - analysis_modes.omega0*gvar.OM*1e6
+    delta_omega_nlm = omega_nlm# - analysis_modes.omega0*gvar.OM*1e6
     rlpObj.get_Pjl()
     acoeffs = rlpObj.get_coeffs(delta_omega_nlm)
+    acoeffs[0] = analysis_modes.omega0*gvar.OM*1e6
     return acoeffs
 
 
@@ -110,19 +112,32 @@ fqdpt = (analysis_modes.omega0 + eigvals_cenmode_qdpt/2/analysis_modes.omega0)
 fdpt *= gvar.OM * 1e6
 fqdpt *= gvar.OM * 1e6
 
-np.save(f'{gvar.datadir}/new_freqs_full/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
-np.save(f'{gvar.datadir}/new_freqs_full/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
-store_offset()
+# dirname = "new_freqs_half"
+dirnamenew = "new_freqs_jesper"
 
-rlp = RL.ritzLavelyPoly(args.l0, 12)
+np.save(f'{gvar.datadir}/{dirnamenew}/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
+np.save(f'{gvar.datadir}/{dirnamenew}/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
+# store_offset()
 
-acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])*1e3
-acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])*1e3
+ritz_degree = min(args.l0//2+1, 36)
+rlp = RL.ritzLavelyPoly(args.l0, ritz_degree)
+
+# acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])*1e3
+# acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])*1e3
+acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt)*1e3
+acoeffs_dpt = get_RL_coeffs(rlp, fdpt)*1e3
+
+acoeffs_qdpt[0] /= 1e3
+acoeffs_dpt[0] /= 1e3
+
+acoeffs_qdpt = np.pad(acoeffs_qdpt, (0, 36-ritz_degree), mode='constant')
+acoeffs_dpt = np.pad(acoeffs_dpt, (0, 36-ritz_degree), mode='constant')
+
 print(f"QDPT a-coeffs = {acoeffs_qdpt}")
 print(f" DPT a-coeffs = {acoeffs_dpt}")
-np.save(f'{gvar.datadir}/new_freqs_full/qdpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy',
+np.save(f'{gvar.datadir}/{dirnamenew}/qdpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy',
         acoeffs_qdpt)
-np.save(f'{gvar.datadir}/new_freqs_full/qdpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy',
+np.save(f'{gvar.datadir}/{dirnamenew}/dpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy',
         acoeffs_dpt)
 
 # plt.plot(fqdpt, 'r')

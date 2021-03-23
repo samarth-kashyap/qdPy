@@ -6,4 +6,5 @@ jobscripts/ipjobs*
 jobscripts/gnup*
 plots/*.output
 *.out
-
+*.splits
+*.pdf

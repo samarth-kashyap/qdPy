@@ -34,12 +34,14 @@ def get_acoeffs_list(n, imax):
     if len(l_arr) == 0:
         return l_arr, l_arr, l_arr
 
+    dirnamenew = "new_freqs_onlyw5"
+
     for ell in l_arr:
         # print(f"Computing a-coeffs for n = {n}, ell = {ell}")
         count = 0
         try:
-            fqdpt = np.load(f"{datadir}/new_freqs_full/qdpt_{n:02d}_{ell:03d}.npy")
-            fdpt = np.load(f"{datadir}/new_freqs_full/dpt_{n:02d}_{ell:03d}.npy")
+            fqdpt = np.load(f"{datadir}/{dirnamenew}/qdpt_{n:02d}_{ell:03d}.npy")
+            fdpt = np.load(f"{datadir}/{dirnamenew}/dpt_{n:02d}_{ell:03d}.npy")
         except FileNotFoundError:
             count += 1
             pass
