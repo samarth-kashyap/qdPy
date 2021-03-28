@@ -1,26 +1,28 @@
 import numpy as np
 
-datadir = "/scratch/g.samarth/qdPy/new_freqs_jesper"
+datadir = "/scratch/g.samarth/qdPy/new_freqs_w135"
 
 data = np.loadtxt("/home/g.samarth/Woodard2013/WoodardPy/HMI/hmi.6328.36")
 lendata = data.shape[0]
 ells = data[:, 0].astype('int')
 enns = data[:, 1].astype('int')
-sigs = data[:, 48:56]
 
-nmax = 5
-mask_nmax = enns <= 8
+# max_splits = 6
+max_splits = 36
+sigs = data[:, 48:48+max_splits]
+
+nmax = 7
+mask_nmax = enns <= nmax
 ells = ells[mask_nmax]
 enns = enns[mask_nmax]
 sigs = sigs[mask_nmax, :]
 lendata = mask_nmax.sum()
 
-max_splits = 6
 split_idxs = np.arange(1, max_splits+1, 2)
 #split_idxs = np.arange(1, max_splits+1, 2)
 
-fqd = open("qdpt.jesper.36.splits", "w")
-fd = open("dpt.jesper.36.splits", "w")
+fqd = open("qdpt.w135.36.splits", "w")
+fd = open("dpt.w135.36.splits", "w")
 
 for i in range(lendata):
     ell, enn = ells[i], enns[i]

@@ -35,7 +35,12 @@ args = parser.parse_args()
 
 
 # {{{ Reading global variables
-rmin, rmax = 0.0, 1.0
+rmin, rmax = 0.0, 1.2
+# setting rmax as 1.2 because the entire r array needs to be used
+# in order to reproduce
+# (1) the correct normalization
+# (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
+
 # (Since we are using lmax = 300, 0.45*300 \approx 150)
 SMAX = 5      # maximum s for constructing supermatrix
 FWINDOW = 150   # microHz
@@ -113,20 +118,25 @@ fdpt *= gvar.OM * 1e6
 fqdpt *= gvar.OM * 1e6
 
 # dirname = "new_freqs_half"
-dirnamenew = "new_freqs_jesper"
+# dirnamenew = "new_freqs_430"
+dirnamenew = "new_freqs_w135"
 
 np.save(f'{gvar.datadir}/{dirnamenew}/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
 np.save(f'{gvar.datadir}/{dirnamenew}/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
 # store_offset()
 
+
+# converting to nHz before computing splitting coefficients
+fdpt *= 1e3
+fqdpt *= 1e3
+
 ritz_degree = min(args.l0//2+1, 36)
 rlp = RL.ritzLavelyPoly(args.l0, ritz_degree)
 
-# acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt[::-1])*1e3
-# acoeffs_dpt = get_RL_coeffs(rlp, fdpt[::-1])*1e3
-acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt)*1e3
-acoeffs_dpt = get_RL_coeffs(rlp, fdpt)*1e3
+acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt)
+acoeffs_dpt = get_RL_coeffs(rlp, fdpt)
 
+# converting nu_{n\ell} back to muHz
 acoeffs_qdpt[0] /= 1e3
 acoeffs_dpt[0] /= 1e3
 
