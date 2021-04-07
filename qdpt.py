@@ -1,29 +1,25 @@
+"""Computes the eigenfrequencies using QDPT and DPT"""
+import argparse
+import logging
 import numpy as np
-import matplotlib.pyplot as plt
 import qdclasses as qdcls
 import ritzlavely as RL
 import globalvars
-import logging
-import argparse
-
-# {{{ Logging module
-# create logger
-logger = logging.getLogger('qdpt.py')
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-# }}} logging
+import functions as FN
 
 
-# {{{ reading arguments from command line
-parser = argparse.ArgumentParser()
-parser.add_argument("--n0", help="radial order", type=int)
-parser.add_argument("--l0", help="angular degree", type=int)
-args = parser.parse_args()
-# }}} argparse
+# {{{ def create_argparser():
+def create_argparser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n0", help="radial order", type=int)
+    parser.add_argument("--l0", help="angular degree", type=int)
+    ARGS = parser.parse_args()
+    return ARGS
+# }}} create_argparser()
+
+
+LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.DEBUG)
+ARGS = create_argparser()
 
 
 # {{{ Reading global variables
@@ -31,12 +27,12 @@ args = parser.parse_args()
 # in order to reproduce
 # (1) the correct normalization
 # (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
-rmin, rmax = 0.0, 1.2
+RMIN, RMAX = 0.0, 1.2
 
 # (Since we are using lmax = 300, 0.45*300 \approx 150)
 SMAX = 5      # maximum s for constructing supermatrix
 FWINDOW = 150   # microHz
-gvar = globalvars.globalVars(rmin, rmax, SMAX, FWINDOW, args)
+GVAR = globalvars.globalVars(RMIN, RMAX, SMAX, FWINDOW, ARGS)
 # }}} global variables
 
 
@@ -123,11 +119,11 @@ def get_RL_coeffs(delta_omega_nlm):
     acoeffs - np.ndarray(ndim=1, dtype=np.float)
         the RL coefficients.
     """
-    ritz_degree = min(args.l0//2+1, 36)
-    rlp = RL.ritzLavelyPoly(args.l0, ritz_degree)
-    rlpObj.get_Pjl()
-    acoeffs = rlpObj.get_coeffs(delta_omega_nlm)
-    acoeffs[0] = analysis_modes.omega0*gvar.OM*1e6
+    ritz_degree = min(ARGS.l0//2+1, 36)
+    rlp = RL.ritzLavelyPoly(ARGS.l0, ritz_degree)
+    rlp.get_Pjl()
+    acoeffs = rlp.get_coeffs(delta_omega_nlm)
+    acoeffs[0] = analysis_modes.omega0*GVAR.OM*1e6
     acoeffs = np.pad(acoeffs, (0, 36-ritz_degree), mode='constant')
     return acoeffs
 # }}} get_RL_coeffs(rlpObj, delta_omega_nlm)
@@ -137,16 +133,16 @@ def store_offset():
     """Function to obtain the %change in L2 norm of QDPT - DPT. 
     Used to obtain the plot in Kashyap & Bharati Das et. al. (2021).
     """
-    domega_QDPT = np.linalg.norm(fqdpt - analysis_modes.omega0*gvar.OM*1e6)
-    domega_DPT = np.linalg.norm(fdpt - analysis_modes.omega0*gvar.OM*1e6)
+    domega_QDPT = np.linalg.norm(fqdpt - analysis_modes.omega0*GVAR.OM*1e6)
+    domega_DPT = np.linalg.norm(fdpt - analysis_modes.omega0*GVAR.OM*1e6)
     rel_offset_percent = np.abs((domega_QDPT-domega_DPT)/domega_DPT) * 100.0
-    np.savetxt(f"{gvar.datadir}/qdpt_error_full/offsets_{args.n0:02d}_{args.l0:03d}.dat",
+    np.savetxt(f"{GVAR.datadir}/qdpt_error_full/offsets_{ARGS.n0:02d}_{ARGS.l0:03d}.dat",
             np.array([rel_offset_percent]))
     return 0
 
 
 if __name__ == "__main__":
-    analysis_modes = qdcls.qdptMode(gvar)
+    analysis_modes = qdcls.qdptMode(GVAR)
     super_matrix = analysis_modes.create_supermatrix()
     eigvals_dpt_unsorted = super_matrix.get_eigvals(type='DPT', sorted=False)
     eigvals_qdpt_unsorted, eigvecs_qdpt = super_matrix.get_eigvals(type='QDPT', sorted=False)
@@ -159,15 +155,15 @@ if __name__ == "__main__":
     fqdpt = (analysis_modes.omega0 + eigvals_cenmode_qdpt/2/analysis_modes.omega0)
 
     # converting to muHz
-    fdpt *= gvar.OM * 1e6
-    fqdpt *= gvar.OM * 1e6
+    fdpt *= GVAR.OM * 1e6
+    fqdpt *= GVAR.OM * 1e6
 
     # dirname = "new_freqs_half"
     # dirnamenew = "new_freqs_430"
     dirnamenew = "new_freqs_w135_half"
 
-    np.save(f'{gvar.datadir}/{dirnamenew}/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
-    np.save(f'{gvar.datadir}/{dirnamenew}/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
+    np.save(f'{GVAR.datadir}/{dirnamenew}/qdpt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
+    np.save(f'{GVAR.datadir}/{dirnamenew}/dpt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
 
     # converting to nHz before computing splitting coefficients
     fdpt *= 1e3
@@ -176,9 +172,9 @@ if __name__ == "__main__":
     acoeffs_qdpt = get_RL_coeffs(fqdpt)
     acoeffs_dpt = get_RL_coeffs(fdpt)
 
-    logger.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
-    logger.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
-    np.save(f"{gvar.datadir}/{dirnamenew}/" +
-            f"qdpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy", acoeffs_qdpt)
-    np.save(f"{gvar.datadir}/{dirnamenew}/" +
-            f"dpt_acoeffs_{args.n0:02d}_{args.l0:03d}.npy", acoeffs_dpt)
+    LOGGER.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
+    LOGGER.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
+    np.save(f"{GVAR.datadir}/{dirnamenew}/" +
+            f"qdpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
+    np.save(f"{GVAR.datadir}/{dirnamenew}/" +
+            f"dpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)

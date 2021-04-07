@@ -1,11 +1,18 @@
+"""Class to handle QDPT computation"""
+import logging
 import numpy as np
 import py3nj
 from scipy.integrate import simps
-# from scipy.integrate import trapz as simps 
+import functions as FN
 
 
 NAX = np.newaxis
-
+LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
+WFNAME = 'w.dat'
+# WFNAME = 'w_const.dat'
+# WFNAME = 'w_const_430.dat'
+# WFNAME = 'w_jesper.dat'  # to match with jesper's data
+LOGGER.info(f"Using velocity profile - {WFNAME}")
 
 def w3j(l1, l2, l3, m1, m2, m3):
     l1 = int(2*l1)
@@ -106,8 +113,8 @@ class qdptMode():
         self.nl_neighbors_idx = self.nl_idx_vec(self.nl_neighbors)
         self.omega_neighbors = self.get_omega_neighbors(self.nl_neighbors_idx)
         self.num_neighbors = len(self.nl_neighbors_idx)
-        print(f"Found {self.num_neighbors} neighbors to mode" +
-              f" (n, ell) = ({self.n0}, {self.l0})")
+        LOGGER.info("Found {} neighbors to mode (n, ell) = ({}, {})"\
+                    .format(self.num_neighbors, self.n0, self.l0))
 
     def create_supermatrix(self):
         supmat = superMatrix(self.gvar, self.num_neighbors,
@@ -137,7 +144,7 @@ class superMatrix():
         self.fill_supermatrix_freqdiag()
 
     def fill_supermatrix(self):
-        print(f"Creating submatrices for: ")
+        LOGGER.info("Creating submatrices for: ")
         for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
@@ -182,12 +189,9 @@ class superMatrix():
 
 class subMatrix():
     def __init__(self, ix, iy, sup, printinfo=False):
-        printstr = (f"--- (n1, l1) = " +
-                    f"({sup.nl_neighbors[ix, 0]}, {sup.nl_neighbors[ix, 1]})" +
-                    f" and (n2, l2) = " +
-                    f"({sup.nl_neighbors[iy, 0]}, {sup.nl_neighbors[iy, 1]})")
-        if printinfo:
-            print(printstr)
+        LOGGER.info("--- (n1, l1) = ({}, {}) and (n2, l2) = ({}, {})"\
+                    .format(sup.nl_neighbors[ix, 0], sup.nl_neighbors[ix, 1],
+                            sup.nl_neighbors[iy, 0], sup.nl_neighbors[iy, 1]))
         self.ix, self.iy = int(ix), int(iy)
         self.sup = sup
         self.rmin_idx = self.sup.gvar.rmin_idx
@@ -223,6 +227,7 @@ class subMatrix():
                 submatrix)
         return submatrix
 
+
     def get_Cvec(self, s_arr):
         ell = min(self.ell1, self.ell2)
         m = np.arange(-ell, ell+1)
@@ -232,13 +237,8 @@ class subMatrix():
             wigvals[:, i] = w3j_vecm(self.ell1, s_arr[i], self.ell2, -m, 0*m, m)
 
         Tsr = self.compute_Tsr(s_arr)
-        fname = 'w.dat'
-        # fname = 'w_const.dat'
-        # fname = 'w_const_430.dat'
-        print(f"Using velocity profile - {fname}")
-        # fname = 'w_jesper.dat'  # to match with jesper's data
         # -1 factor from definition of toroidal field
-        wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{fname}')\
+        wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
             [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         # wsr[0, :] *= 0.0 # setting w1 = 0
         # wsr[1, :] *= 0.0 # setting w3 = 0
@@ -273,15 +273,15 @@ class subMatrix():
 
 
     def get_eig(self, mode_idx):
-        # print(f'Getting eigenfunctions for mode_idx = {mode_idx}:' +
-              # f'nl = {self.sup.gvar.nl_all[mode_idx]}')
+        LOGGER.debug('Getting eigenfunctions for mode_idx = {}: nl = {}'\
+                     .format(mode_idx, self.sup.gvar.nl_all[mode_idx]))
         try:
             U = np.loadtxt(f'{self.sup.gvar.eigdir}/' +
                            f'U{mode_idx}.dat')[self.rmin_idx:self.rmax_idx]
             V = np.loadtxt(f'{self.sup.gvar.eigdir}/' +
                            f'V{mode_idx}.dat')[self.rmin_idx:self.rmax_idx]
         except FileNotFoundError:
-            print('Mode file not found for mode index = {mode_idx}')
+            LOGGER.info('Mode file not found for mode index = {mode_idx}')
             return None
         return U, V
 
