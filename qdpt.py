@@ -108,23 +108,26 @@ def get_cenmode_freqs_dpt(eigvals):
 
 
 # {{{ def get_RL_coeffs(rlpObj, delta_omega_nlm):
-def get_RL_coeffs(rlpObj, delta_omega_nlm):
+def get_RL_coeffs(delta_omega_nlm):
     """Obtain the Ritzwoller-Lavely coefficients for a given
     array of frequencies.
 
     Inputs:
     -------
-    rlpObj - ritzLavelyPy object
+    delta_omega_nlm - np.ndarray(ndim=1, dtype=np.float)
+        array containing the change in eigenfrequency due to
+        rotation perturbation.
 
     Outputs:
     --------
     acoeffs - np.ndarray(ndim=1, dtype=np.float)
         the RL coefficients.
     """
+    ritz_degree = min(args.l0//2+1, 36)
+    rlp = RL.ritzLavelyPoly(args.l0, ritz_degree)
     rlpObj.get_Pjl()
     acoeffs = rlpObj.get_coeffs(delta_omega_nlm)
     acoeffs[0] = analysis_modes.omega0*gvar.OM*1e6
-    ritz_degree = rlpObj.jmax - 1
     acoeffs = np.pad(acoeffs, (0, 36-ritz_degree), mode='constant')
     return acoeffs
 # }}} get_RL_coeffs(rlpObj, delta_omega_nlm)
@@ -170,11 +173,8 @@ if __name__ == "__main__":
     fdpt *= 1e3
     fqdpt *= 1e3
 
-    ritz_degree = min(args.l0//2+1, 36)
-    rlp = RL.ritzLavelyPoly(args.l0, ritz_degree)
-
-    acoeffs_qdpt = get_RL_coeffs(rlp, fqdpt)
-    acoeffs_dpt = get_RL_coeffs(rlp, fdpt)
+    acoeffs_qdpt = get_RL_coeffs(fqdpt)
+    acoeffs_dpt = get_RL_coeffs(fdpt)
 
     logger.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
     logger.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
