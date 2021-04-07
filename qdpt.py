@@ -118,8 +118,8 @@ fdpt *= gvar.OM * 1e6
 fqdpt *= gvar.OM * 1e6
 
 # dirname = "new_freqs_half"
-dirnamenew = "new_freqs_430"
-# dirnamenew = "new_freqs_w135_half"
+# dirnamenew = "new_freqs_430"
+dirnamenew = "new_freqs_w135_half"
 
 np.save(f'{gvar.datadir}/{dirnamenew}/qdpt_{args.n0:02d}_{args.l0:03d}.npy', fqdpt)
 np.save(f'{gvar.datadir}/{dirnamenew}/dpt_{args.n0:02d}_{args.l0:03d}.npy', fdpt)
