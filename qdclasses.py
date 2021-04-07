@@ -1,5 +1,4 @@
 import numpy as np
-import wigner
 import py3nj
 from scipy.integrate import simps
 # from scipy.integrate import trapz as simps 

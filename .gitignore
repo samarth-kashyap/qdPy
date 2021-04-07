@@ -10,3 +10,4 @@ plots/*.output
 *.pdf
 *.png
 .config
+output/*

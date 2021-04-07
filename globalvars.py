@@ -15,14 +15,16 @@ configpath = filepath
 with open(f"{configpath}/.config", "r") as f:
     dirnames = f.read().splitlines()
 
-print(dirnames)
-
 class globalVars():
 
     def __init__(self, rmin, rmax, smax, fwindow, args):
-        self.datadir = "/scratch/g.samarth/qdPy"
-        self.progdir = "/home/g.samarth/qdPy"
-        self.eigdir = "/scratch/g.samarth/Solar_Eigen_function/eig_files"
+        # self.datadir = "/scratch/g.samarth/qdPy"
+        # self.progdir = "/home/g.samarth/qdPy"
+        # self.eigdir = "/scratch/g.samarth/Solar_Eigen_function/eig_files"
+
+        self.datadir = dirnames[0]
+        self.progdir = dirnames[1]
+        self.eigdir = dirnames[2]
 
         # Frequency unit conversion factor (in Hz (cgs))
         self.OM = np.loadtxt(f"{self.datadir}/OM.dat")

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-qdPy - a Python package for computing 
-helioseismic eigenfrequencies using 
+qdPy - a Python package for computing
+helioseismic eigenfrequencies using
 quasi-degenerate perturbation theory (qdpt)
 :copyright:
     Samarth G. Kashyap (g.samarth@tifr.res.in), 2021
@@ -30,6 +30,6 @@ setup(
     version='0.1.',
     packages=find_packages("."), # Finds every folder with __init__.py in it. (Hehe)
     install_requires=[
-        "numpy", "matplotlib", "scipy", "astropy"
+        "numpy", "matplotlib", "scipy", "astropy", "wigner", "py3nj"
     ],
 )
