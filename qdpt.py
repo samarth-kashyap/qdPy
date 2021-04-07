@@ -6,7 +6,9 @@ import qdclasses as qdcls
 import ritzlavely as RL
 import globalvars
 import functions as FN
+import time
 
+T1 = time.time()
 
 # {{{ def create_argparser():
 def create_argparser():
@@ -178,3 +180,6 @@ if __name__ == "__main__":
             f"qdpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.datadir}/{dirnamenew}/" +
             f"dpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)
+
+    T2 = time.time()
+    LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))
