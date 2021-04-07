@@ -9,3 +9,4 @@ plots/*.output
 *.splits
 *.pdf
 *.png
+.config
