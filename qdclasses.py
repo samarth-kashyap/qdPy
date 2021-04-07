@@ -233,9 +233,9 @@ class subMatrix():
             wigvals[:, i] = w3j_vecm(self.ell1, s_arr[i], self.ell2, -m, 0*m, m)
 
         Tsr = self.compute_Tsr(s_arr)
-        fname = 'w.dat'
+        # fname = 'w.dat'
         # fname = 'w_const.dat'
-        # fname = 'w_const_430.dat'
+        fname = 'w_const_430.dat'
         print(f"Using velocity profile - {fname}")
         # fname = 'w_jesper.dat'  # to match with jesper's data
         # -1 factor from definition of toroidal field

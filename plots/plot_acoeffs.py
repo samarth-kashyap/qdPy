@@ -34,7 +34,7 @@ def get_acoeffs_list(n, imax):
     if len(l_arr) == 0:
         return l_arr, l_arr, l_arr
 
-    dirnamenew = "new_freqs_onlyw5"
+    dirnamenew = "new_freqs_w135"
 
     for ell in l_arr:
         # print(f"Computing a-coeffs for n = {n}, ell = {ell}")
@@ -129,4 +129,4 @@ fig2.tight_layout()
 fig2.subplots_adjust(top=0.95)
 #fig.show()
 # fig.savefig('/scratch/g.samarth/plots/acoeffs.pdf')
-fig2.savefig('/scratch/g.samarth/plots/acoeffs_error.pdf')
+fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_error.pdf')

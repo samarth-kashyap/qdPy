@@ -54,16 +54,17 @@ def plot_knls(n):
     return fig, norm, knls
 
 if __name__ == "__main__":
-    ell_list = np.array([50, 100, 150, 200, 250, 300])
+    # ell_list = np.array([50, 100, 150, 200, 250, 300])
+    ell_list = np.array([250])
     fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
     for il, ell in enumerate(ell_list):
         L = np.sqrt(ell*(ell+1))
         idx = nl.index([n, ell])
-        U = np.loadtxt(f"{eig_dir}/U{idx}.dat")[mask95]
-        V = np.loadtxt(f"{eig_dir}/V{idx}.dat")[mask95]
-        axs.flatten()[0].semilogy(r95, abs(U/L/V), label='$\ell$ = ' + f'{ell}')
-        axs.flatten()[1].semilogy(r95, U, 'k', label='U for ' + '$\ell$ = ' + f'{ell}')
-        axs.flatten()[1].semilogy(r95, L*V, '--k', label='LV for ' + '$\ell$ = ' + f'{ell}')
+        U = np.loadtxt(f"{eig_dir}/U{idx}.dat")#[mask95]
+        V = np.loadtxt(f"{eig_dir}/V{idx}.dat")#[mask95]
+        axs.flatten()[0].semilogy(r, abs(U/L/V), label='$\ell$ = ' + f'{ell}')
+        axs.flatten()[1].semilogy(r, U, 'k', label='U for ' + '$\ell$ = ' + f'{ell}')
+        axs.flatten()[1].semilogy(r, L*V, '--k', label='LV for ' + '$\ell$ = ' + f'{ell}')
     axs.flatten()[0].set_xlabel("$r/R_\odot$")
     axs.flatten()[1].set_xlabel("$r/R_\odot$")
     axs.flatten()[0].set_ylabel("$U/LV$")
@@ -71,6 +72,7 @@ if __name__ == "__main__":
     fig.suptitle(f"n = {n}")
     axs.flatten()[0].legend()
     axs.flatten()[1].legend()
+    fig.tight_layout()
     plt.show(fig)
 
    

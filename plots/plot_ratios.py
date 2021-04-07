@@ -2,11 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 datadir = "/home/g.samarth/qdPy/postprocess"
-qdpt = np.loadtxt(f'{datadir}/qdpt_const_full.splits')
-dpt = np.loadtxt(f'{datadir}/dpt_const_full.splits')
+qdpt = np.loadtxt(f'{datadir}/qdpt.430nhz.6.splits')
+dpt = np.loadtxt(f'{datadir}/dpt.430nhz.6.splits')
 
-qdpt_half = np.loadtxt(f'{datadir}/qdpt_const_half.splits')
-dpt_half = np.loadtxt(f'{datadir}/dpt_const_half.splits')
+qdpt_half = np.loadtxt(f'{datadir}/qdpt.215nhz.6.splits')
+dpt_half = np.loadtxt(f'{datadir}/dpt.215nhz.6.splits')
 
 enn = qdpt[:, 0]
 ell = qdpt[:, 1]

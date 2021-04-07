@@ -8,3 +8,4 @@ plots/*.output
 *.out
 *.splits
 *.pdf
+*.png
