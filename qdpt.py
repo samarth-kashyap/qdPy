@@ -18,7 +18,7 @@ def create_argparser():
 # }}} create_argparser()
 
 
-LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.DEBUG)
+LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
 ARGS = create_argparser()
 
 

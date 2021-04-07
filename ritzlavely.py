@@ -1,8 +1,12 @@
+"""Class to handle Ritzwoller-Lavely polynomials"""
+import logging
 import numpy as np
 import scipy.special as special
 import numpy.polynomial.legendre as npleg
+import functions as FN
 
 NAX = np.newaxis
+LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
 
 class ritzLavelyPoly():
     def __init__(self, ell, jmax):
@@ -18,7 +22,7 @@ class ritzLavelyPoly():
 
     def get_Pjl(self):
         if self.Pjl_exists:
-            print('Ritzwoller-Lavely polynomials already computed')
+            LOGGER.info('Ritzwoller-Lavely polynomials already computed')
             return self.Pjl
         else:
             self.Pjl[0, :] += self.ell
