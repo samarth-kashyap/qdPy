@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 #----------------------------------------------------------------------
 #                       All qts in CGS
@@ -8,7 +9,13 @@ import numpy as np
 # OM = np.sqrt(4*np.pi*R_sol*B_0**2/M_sol)
 # rho_0 = M_sol/(4pi R_sol^3/3) = 1.41 ~ 1g/cc (for kernel calculation)
 #----------------------------------------------------------------------
+filenamepath = os.path.realpath(__file__)
+filepath = '/'.join(filenamepath.split('/')[:-1])
+configpath = filepath
+with open(f"{configpath}/.config", "r") as f:
+    dirnames = f.read().splitlines()
 
+print(dirnames)
 
 class globalVars():
 
