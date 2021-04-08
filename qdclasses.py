@@ -4,6 +4,7 @@ import numpy as np
 import py3nj
 from scipy.integrate import simps
 import functions as FN
+from tqdm import tqdm
 
 
 NAX = np.newaxis
@@ -13,6 +14,7 @@ WFNAME = 'w.dat'
 # WFNAME = 'w_const_430.dat'
 # WFNAME = 'w_jesper.dat'  # to match with jesper's data
 LOGGER.info(f"Using velocity profile - {WFNAME}")
+
 
 def w3j(l1, l2, l3, m1, m2, m3):
     l1 = int(2*l1)
@@ -145,7 +147,7 @@ class superMatrix():
 
     def fill_supermatrix(self):
         LOGGER.info("Creating submatrices for: ")
-        for i in range(self.dim_blocks):
+        for i in tqdm(range(self.dim_blocks), desc='Submatrices'):
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
                 submat = sm.get_submat()
@@ -281,7 +283,8 @@ class subMatrix():
             V = np.loadtxt(f'{self.sup.gvar.eigdir}/' +
                            f'V{mode_idx}.dat')[self.rmin_idx:self.rmax_idx]
         except FileNotFoundError:
-            LOGGER.info('Mode file not found for mode index = {mode_idx}')
+            LOGGER.info('Mode file not found for mode index = {}'\
+                        .format(mode_idx))
             return None
         return U, V
 
