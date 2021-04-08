@@ -26,6 +26,8 @@ class globalVars():
         self.progdir = dirnames[1]
         self.eigdir = dirnames[2]
 
+        self.args = args
+
         # Frequency unit conversion factor (in Hz (cgs))
         self.OM = np.loadtxt(f"{self.datadir}/OM.dat")
         self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
@@ -37,8 +39,15 @@ class globalVars():
         # getting indices for minimum and maximum r
         self.rmin_idx = self.get_idx(self.r, rmin)
         self.rmax_idx = self.get_idx(self.r, rmax) #+ 1
-        self.rmin = rmin
-        self.rmax = rmax
+        if args.precompute:
+            self.rmin = 0.0
+            self.rmax = 0.95
+        elif args.use_precomputed:
+            self.rmin = 0.95
+            self.rmax = rmax
+        else:
+            self.rmin = rmin
+            self.rmax = rmax
         self.smax = smax
         self.fwindow = fwindow
 

@@ -20,6 +20,9 @@ def create_argparser():
     parser.add_argument("--precompute",
                         help="precompute the integrals upto r=0.9",
                         action="store_true")
+    parser.add_argument("--use_precomputed",
+                        help="use precomputed integrals",
+                        action="store_true")
     args = parser.parse_args()
     return args
 # }}} create_argparser()
@@ -173,6 +176,8 @@ def solve_eigprob():
 if __name__ == "__main__":
     analysis_modes = qdcls.qdptMode(GVAR)
     super_matrix = analysis_modes.create_supermatrix()
+
+    """
     fdpt, fqdpt = solve_eigprob()
 
     # converting to muHz
@@ -195,6 +200,7 @@ if __name__ == "__main__":
             f"qdpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.datadir}/{DIRNAME_NEW}/" +
             f"dpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)
+    """
 
     T2 = time.time()
     LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))
