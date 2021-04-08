@@ -209,8 +209,11 @@ class subMatrix():
         self.ell2 = sup.nl_neighbors[iy, 1]
 
 
-    def get_submat(self, s_arr=np.array([1, 3, 5])):
+    def get_submat(self, s_arr=np.array([1, 3, 5]), use_precompute=False):
         Cvec = self.get_Cvec(s_arr)
+        if use_precompute:
+            Cvec += np.load(f"{self.sup.gvar.datadir}/submatrices/" +
+                            f"pc.{self.n1}.{self.ell1}-{self.n2}.{self.ell2}.npy")
         Cmat = np.diag(Cvec)
         submatrix = np.zeros((int(self.sup.dimX_submat[0, self.ix]),
                               int(self.sup.dimY_submat[self.iy, 0])))
@@ -225,12 +228,12 @@ class subMatrix():
             submatrix = Cmat
 
         self.mat = submatrix
-        np.save(f"{self.sup.gvar.datadir}/submatrices/{self.ell1}.{self.ell2}.npy",
-                submatrix)
+        # np.save(f"{self.sup.gvar.datadir}/submatrices/{self.ell1}.{self.ell2}.npy",
+                # submatrix)
         return submatrix
 
 
-    def get_Cvec(self, s_arr):
+    def get_Cvec(self, s_arr, precomputing=False):
         ell = min(self.ell1, self.ell2)
         m = np.arange(-ell, ell+1)
 
@@ -251,6 +254,9 @@ class subMatrix():
         prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)
         omegaref = self.sup.omegaref
         Cvec = minus1pow_vec(m) * 8*np.pi * omegaref * (wigvals @ (prod_gammas * integral))
+        if precomputing:
+            np.save(Cvec, f"{self.sup.gvar.datadir}/submatrices/" +
+                    f"pc.{self.n1}.{self.ell1}-{self.n2}.{self.ell2}.npy")
         return Cvec
 
 

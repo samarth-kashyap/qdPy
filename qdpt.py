@@ -17,8 +17,11 @@ def create_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n0", help="radial order", type=int)
     parser.add_argument("--l0", help="angular degree", type=int)
-    ARGS = parser.parse_args()
-    return ARGS
+    parser.add_argument("--precompute",
+                        help="precompute the integrals upto r=0.9",
+                        action="store_true")
+    args = parser.parse_args()
+    return args
 # }}} create_argparser()
 
 
@@ -195,3 +198,5 @@ if __name__ == "__main__":
 
     T2 = time.time()
     LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))
+    print("Time taken = {:7.2f} seconds".format((T2-T1)))
+
