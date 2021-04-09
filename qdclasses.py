@@ -113,7 +113,6 @@ class qdptMode():
 
         # only even l1-l2 is coupled for odd-s rotation perturbation
         mask_odd = ((nl_all[:, 1] - self.l0)%2) == 0
-        print(f"mask_odd = {mask_odd}")
         mask_nb = mask_omega * mask_ell * mask_odd
         sort_idx = np.argsort(abs(omega_diff[mask_nb]))
         self.nl_neighbors = nl_all[mask_nb][sort_idx]
