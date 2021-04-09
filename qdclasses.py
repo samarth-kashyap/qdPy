@@ -329,8 +329,8 @@ class subMatrix():
             arg_str2 = f"{enn2}.{ell2}"
             U1 = self.sup.eigU[arg_str1]
             U2 = self.sup.eigU[arg_str2]
-            V1 = self.sup.eigU[arg_str1]
-            V2 = self.sup.eigU[arg_str2]
+            V1 = self.sup.eigV[arg_str1]
+            V2 = self.sup.eigV[arg_str2]
         else:
             m1idx = self.sup.nl_neighbors_idx[self.ix]
             m2idx = self.sup.nl_neighbors_idx[self.iy]
