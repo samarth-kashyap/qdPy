@@ -37,8 +37,6 @@ class globalVars():
         self.omega_list = np.loadtxt(f"{self.datadir}/muhz.dat") * 1e-6 / self.OM
 
         # getting indices for minimum and maximum r
-        self.rmin_idx = self.get_idx(self.r, rmin)
-        self.rmax_idx = self.get_idx(self.r, rmax) #+ 1
         if args.precompute:
             self.rmin = 0.0
             self.rmax = 0.95
@@ -48,6 +46,11 @@ class globalVars():
         else:
             self.rmin = rmin
             self.rmax = rmax
+
+        self.rmin_idx = self.get_idx(self.r, self.rmin)
+        self.rmax_idx = self.get_idx(self.r, self.rmax) #+ 1
+        print(f"rmin index = {self.rmin_idx}; rmax index = {self.rmax_idx}")
+
         self.smax = smax
         self.fwindow = fwindow
 
