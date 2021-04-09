@@ -183,8 +183,8 @@ if __name__ == "__main__":
     fdpt *= GVAR.OM * 1e6
     fqdpt *= GVAR.OM * 1e6
 
-    np.save(f'{GVAR.datadir}/{DIRNAME_NEW}/qdpt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
-    np.save(f'{GVAR.datadir}/{DIRNAME_NEW}/dpt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
+    np.save(f'{GVAR.datadir}/{DIRNAME_NEW}/qdpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
+    np.save(f'{GVAR.datadir}/{DIRNAME_NEW}/dpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
 
     # converting to nHz before computing splitting coefficients
     fdpt *= 1e3
@@ -196,9 +196,9 @@ if __name__ == "__main__":
     LOGGER.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
     LOGGER.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
     np.save(f"{GVAR.datadir}/{DIRNAME_NEW}/" +
-            f"qdpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
+            f"qdpt_acoeffs_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.datadir}/{DIRNAME_NEW}/" +
-            f"dpt_acoeffs_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)
+            f"dpt_acoeffs_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)
 
     T2 = time.time()
     LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))
