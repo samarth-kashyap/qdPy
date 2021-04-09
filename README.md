@@ -7,6 +7,6 @@ and computes the new eigenfrequencies using both
 degenerate perturbation theory (DPT) and quasi-degenrate
 perturbation theory (QDPT).
 
-# Inversion
+# Inversions
 -- yet to be implemented 
 
