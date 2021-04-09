@@ -5,6 +5,7 @@ import py3nj
 from scipy.integrate import simps
 import functions as FN
 from tqdm import tqdm
+import time
 
 
 NAX = np.newaxis
@@ -109,7 +110,11 @@ class qdptMode():
         omega_diff = (omega_list - omega0) * self.gvar.OM * 1e6
         mask_omega = abs(omega_diff) <= self.freq_window
         mask_ell = abs(nl_all[:, 1] - self.l0) <= self.smax
-        mask_nb = mask_omega * mask_ell
+
+        # only even l1-l2 is coupled for odd-s rotation perturbation
+        mask_odd = ((nl_all[:, 1] - self.l0)%2) == 0
+        print(f"mask_odd = {mask_odd}")
+        mask_nb = mask_omega * mask_ell * mask_odd
         sort_idx = np.argsort(abs(omega_diff[mask_nb]))
         self.nl_neighbors = nl_all[mask_nb][sort_idx]
         self.nl_neighbors_idx = self.nl_idx_vec(self.nl_neighbors)
@@ -119,10 +124,21 @@ class qdptMode():
                     .format(self.num_neighbors, self.n0, self.l0))
 
     def create_supermatrix(self):
+        t1 = time.time()
         supmat = superMatrix(self.gvar, self.num_neighbors,
                              self.nl_neighbors, self.nl_neighbors_idx,
                              self.omega0, self.omega_neighbors)
+        self.super_matrix = supmat
+        t2 = time.time()
+        print("Time taken to create supermatrix = {:7.2f} seconds".format((t2-t1)))
         return supmat
+
+    def update_supermatrix(self):
+        t1 = time.time()
+        self.super_matrix.fill_supermatrix()
+        self.super_matrix.fill_supermatrix_freqdiag()
+        t2 = time.time()
+        print("Time taken to update supermatrix = {:7.2f} seconds".format((t2-t1)))
 
 
 class superMatrix():
@@ -141,9 +157,52 @@ class superMatrix():
                                     dtype=np.complex128)
         self.supmat_dpt = np.zeros((self.dim_super, self.dim_super),
                                     dtype=np.complex128)
+
+        # loading precomputed values before recomputing the submatrices.
+        if gvar.args.use_precomputed:
+            narr = self.nl_neighbors[:, 0]
+            larr = self.nl_neighbors[:, 1]
+            self.Cvec_pc = self.get_precomputed_Cvec(narr, larr)
+
+        self.eigU, self.eigV = self.load_eigs()
+
         self.fill_supermatrix()
         self.supmat_dpt = np.diag(np.diag(self.supmat))
         self.fill_supermatrix_freqdiag()
+        return None
+
+    def load_eigs(self):
+        eigU = {}
+        eigV = {}
+        for im, mode_idx in enumerate(self.nl_neighbors_idx):
+            LOGGER.debug('Getting eigenfunctions for mode_idx = {}: nl = {}'\
+                        .format(mode_idx, self.nl_neighbors[im, :]))
+            try:
+                U = np.loadtxt(f'{self.gvar.eigdir}/' +
+                            f'U{mode_idx}.dat')[self.gvar.rmin_idx:self.gvar.rmax_idx]
+                V = np.loadtxt(f'{self.gvar.eigdir}/' +
+                            f'V{mode_idx}.dat')[self.gvar.rmin_idx:self.gvar.rmax_idx]
+            except FileNotFoundError:
+                LOGGER.info('Mode file not found for mode index = {}'\
+                            .format(mode_idx))
+            enn, ell = self.nl_neighbors[im, 0], self.nl_neighbors[im, 1]
+            arg_str = f"{enn}.{ell}"
+            eigU[arg_str] = U
+            eigV[arg_str] = V
+        return eigU, eigV
+
+
+
+    def get_precomputed_Cvec(self, narr, larr):
+        Cvec_pc = {}
+        for i in range(self.dim_blocks):
+            for ii in range(i, self.dim_blocks):
+                n1, n2 = narr[i], narr[ii]
+                l1, l2 = larr[i], larr[ii]
+                arg_str = f"{n1}.{l1}-{n2}.{l2}"
+                Cvec_pc[arg_str] = np.load(f"{self.gvar.datadir}/submatrices/" +
+                                           f"pc.{n1}.{l1}-{n2}.{l2}.npy")
+        return Cvec_pc
 
     def fill_supermatrix(self):
         LOGGER.info("Creating submatrices for: ")
@@ -212,8 +271,8 @@ class subMatrix():
     def get_submat(self, s_arr=np.array([1, 3, 5])):
         Cvec = self.get_Cvec(s_arr)
         if self.sup.gvar.args.use_precomputed:
-            Cvec += np.load(f"{self.sup.gvar.datadir}/submatrices/" +
-                            f"pc.{self.n1}.{self.ell1}-{self.n2}.{self.ell2}.npy")
+            arg_str = f"{self.n1}.{self.ell1}-{self.n2}.{self.ell2}"
+            Cvec += self.sup.Cvec_pc[arg_str]
         Cmat = np.diag(Cvec)
         submatrix = np.zeros((int(self.sup.dimX_submat[0, self.ix]),
                               int(self.sup.dimY_submat[self.iy, 0])))
@@ -262,10 +321,22 @@ class subMatrix():
 
     def compute_Tsr(self, s_arr):
         Tsr = np.zeros((len(s_arr), len(self.sup.gvar.r)))
-        m1idx = self.sup.nl_neighbors_idx[self.ix]
-        m2idx = self.sup.nl_neighbors_idx[self.iy]
-        U1, V1 = self.get_eig(m1idx)
-        U2, V2 = self.get_eig(m2idx)
+        if self.sup.gvar.args.use_precomputed:
+            enn1 = self.sup.nl_neighbors[self.ix, 0]
+            ell1 = self.sup.nl_neighbors[self.ix, 1]
+            enn2 = self.sup.nl_neighbors[self.iy, 0]
+            ell2 = self.sup.nl_neighbors[self.iy, 1]
+            arg_str1 = f"{enn1}.{ell1}"
+            arg_str2 = f"{enn2}.{ell2}"
+            U1 = self.sup.eigU[arg_str1]
+            U2 = self.sup.eigU[arg_str2]
+            V1 = self.sup.eigU[arg_str1]
+            V2 = self.sup.eigU[arg_str2]
+        else:
+            m1idx = self.sup.nl_neighbors_idx[self.ix]
+            m2idx = self.sup.nl_neighbors_idx[self.iy]
+            U1, V1 = self.get_eig(m1idx)
+            U2, V2 = self.get_eig(m2idx)
         L1sq = self.ell1*(self.ell1+1)
         L2sq = self.ell2*(self.ell2+1)
         Om1 = Omega(self.ell1, 0)
