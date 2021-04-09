@@ -9,7 +9,7 @@ import time
 
 
 NAX = np.newaxis
-LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
+LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 WFNAME = 'w.dat'
 # WFNAME = 'w_const.dat'
 # WFNAME = 'w_const_430.dat'

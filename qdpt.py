@@ -28,7 +28,7 @@ def create_argparser():
 # }}} create_argparser()
 
 
-LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
+LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = create_argparser()
 DIRNAME_NEW = "new_freqs_w135_half"
 T1 = time.time()
