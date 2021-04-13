@@ -70,14 +70,21 @@ def create_dir(fulldirpath):
     return None
 
 if __name__ == "__main__":
-    datadir = input(f"Enter location of the SNRNMAIS files:" +
+    snrnmais_dir = input(f"Enter location of the SNRNMAIS files:" +
                     f"Default: {cwd} -- ") or f"{cwd}"
+    scratch_dir = input(f"Enter location of output files or directory in scratch:" +
+                    f"Default: {cwd} -- ") or f"{cwd}"
+
+    # creating miscellaneous directories
     create_dir(f"{cwd}/logs")
+    create_dir(f"{scratch_dir}/output_files")
+
     # temporary directory to be deleted later
     # this is already created because of git cloning in the make file
     with open(f"{cwd}/.config", "w") as f:
         f.write(f"{cwd}{NL}")
-        f.write(f"{datadir}")
+        f.write(f"{scratch_dir}{NL}")
+        f.write(f"{snrnmais_dir}")
 
     # create_makefile()
     # os.system("make")

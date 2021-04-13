@@ -7,6 +7,7 @@ import qdclasses as qdcls
 import ritzlavely as RL
 import globalvars
 import functions as FN
+import os
 
 
 # {{{ def create_argparser():
@@ -31,8 +32,8 @@ def create_argparser():
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = create_argparser()
 DIRNAME_NEW = "new_freqs_w135_half"
-T1 = time.time()
 
+T1 = time.time()
 
 # {{{ Reading global variables
 # setting rmax as 1.2 because the entire r array needs to be used
@@ -47,6 +48,9 @@ FWINDOW = 150   # microHz
 GVAR = globalvars.globalVars(RMIN, RMAX, SMAX, FWINDOW, ARGS)
 # }}} global variables
 
+# creates new dir if it does not exist
+if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
+    os.mkdir(f"{GVAR.outdir}/{DIRNAME_NEW}")
 
 # {{{ def get_l0_freqs_qdpt(eigvals, eigvecs):
 def get_l0_freqs_qdpt(eigvals, eigvecs):
@@ -183,8 +187,8 @@ if __name__ == "__main__":
     fdpt *= GVAR.OM * 1e6
     fqdpt *= GVAR.OM * 1e6
 
-    np.save(f'{GVAR.datadir}/{DIRNAME_NEW}/qdpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
-    np.save(f'{GVAR.datadir}/{DIRNAME_NEW}/dpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
+    np.save(f'{GVAR.outdir}/{DIRNAME_NEW}/qdpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
+    np.save(f'{GVAR.outdir}/{DIRNAME_NEW}/dpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
 
     # converting to nHz before computing splitting coefficients
     fdpt *= 1e3
@@ -195,9 +199,9 @@ if __name__ == "__main__":
 
     LOGGER.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
     LOGGER.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
-    np.save(f"{GVAR.datadir}/{DIRNAME_NEW}/" +
+    np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f"qdpt_acoeffs_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
-    np.save(f"{GVAR.datadir}/{DIRNAME_NEW}/" +
+    np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f"dpt_acoeffs_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)
 
     T2 = time.time()

@@ -24,11 +24,11 @@ class globalVars():
 
         self.local_dir = dirnames[0]
         self.scratch_dir = dirnames[1]
-        self.snrnmais = f"{self.scratch_dir}/snrnmais_files"
-        self.datadir = f"{self.scratch_dir}/data"
+        self.snrnmais = dirnames[2]
+        self.datadir = f"{self.snrnmais}/data_files"
         self.outdir = f"{self.scratch_dir}/output_files"
-        self.progdir = self.local_dir
         self.eigdir = f"{self.snrnmais}/eig_files"
+        self.progdir = self.local_dir
 
         # self.datadir = dirnames[0]
         # self.progdir = dirnames[1]
@@ -44,7 +44,7 @@ class globalVars():
         self.OM = np.sqrt(4*np.pi*self.R_sol*self.B_0**2/self.M_sol) 
         # should be 2.096367060263202423e-05 for above numbers
 
-        self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
+        # self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
         self.r = np.loadtxt(f"{self.datadir}/r.dat")
         self.nl_all = np.loadtxt(f"{self.datadir}/nl.dat").astype('int')
         self.nl_all_list = np.loadtxt(f"{self.datadir}/nl.dat").astype('int').tolist()
@@ -70,7 +70,7 @@ class globalVars():
 
         # retaining only region between rmin and rmax
         self.r = self.mask_minmax(self.r)
-        self.rho = self.mask_minmax(self.rho)
+        # self.rho = self.mask_minmax(self.rho)
 
         self.n0 = args.n0
         self.l0 = args.l0

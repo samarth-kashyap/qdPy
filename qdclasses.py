@@ -10,7 +10,7 @@ import time
 
 NAX = np.newaxis
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
-WFNAME = 'w.dat'
+WFNAME = 'w_s/w.dat'
 # WFNAME = 'w_const.dat'
 # WFNAME = 'w_const_430.dat'
 # WFNAME = 'w_jesper.dat'  # to match with jesper's data
@@ -307,7 +307,8 @@ class subMatrix():
         # wsr[1, :] *= 0.0 # setting w3 = 0
         # wsr[2, :] *= 0.0 # setting w5 = 0
         wsr /= 2.0
-        integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
+        # integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
+        integrand = Tsr * wsr   # since U and V are scaled by sqrt(rho) * r
         integral = simps(integrand, axis=1, x=self.sup.gvar.r)
         prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)
         omegaref = self.sup.omegaref
