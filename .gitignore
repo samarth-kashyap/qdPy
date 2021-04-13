@@ -12,3 +12,4 @@ plots/*.output
 .config
 output/*
 *.log
+*.npy
