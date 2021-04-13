@@ -22,14 +22,28 @@ class globalVars():
         # self.progdir = "/home/g.samarth/qdPy"
         # self.eigdir = "/scratch/g.samarth/Solar_Eigen_function/eig_files"
 
-        self.datadir = dirnames[0]
-        self.progdir = dirnames[1]
-        self.eigdir = dirnames[2]
+        self.local_dir = dirnames[0]
+        self.scratch_dir = dirnames[1]
+        self.snrnmais = f"{self.scratch_dir}/snrnmais_files"
+        self.datadir = f"{self.scratch_dir}/data"
+        self.outdir = f"{self.scratch_dir}/output_files"
+        self.progdir = self.local_dir
+        self.eigdir = f"{self.snrnmais}/eig_files"
+
+        # self.datadir = dirnames[0]
+        # self.progdir = dirnames[1]
+        # self.eigdir = dirnames[2]
 
         self.args = args
 
         # Frequency unit conversion factor (in Hz (cgs))
-        self.OM = np.loadtxt(f"{self.datadir}/OM.dat")
+        #all quantities in cgs
+        self.M_sol = 1.989e33 #gn,l = 0,200
+        self.R_sol = 6.956e10 #cm
+        self.B_0 = 10e5 #G
+        self.OM = np.sqrt(4*np.pi*self.R_sol*self.B_0**2/self.M_sol) 
+        # should be 2.096367060263202423e-05 for above numbers
+
         self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
         self.r = np.loadtxt(f"{self.datadir}/r.dat")
         self.nl_all = np.loadtxt(f"{self.datadir}/nl.dat").astype('int')

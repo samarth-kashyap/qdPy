@@ -13,3 +13,4 @@ plots/*.output
 output/*
 *.log
 *.npy
+qdPy.egg-info/
