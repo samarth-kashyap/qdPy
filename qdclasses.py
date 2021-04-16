@@ -199,7 +199,7 @@ class superMatrix():
                 n1, n2 = narr[i], narr[ii]
                 l1, l2 = larr[i], larr[ii]
                 arg_str = f"{n1}.{l1}-{n2}.{l2}"
-                Cvec_pc[arg_str] = np.load(f"{self.gvar.datadir}/submatrices/" +
+                Cvec_pc[arg_str] = np.load(f"{self.gvar.outdir}/submatrices/" +
                                            f"pc.{n1}.{l1}-{n2}.{l2}.npy")
         return Cvec_pc
 
@@ -314,7 +314,7 @@ class subMatrix():
         omegaref = self.sup.omegaref
         Cvec = minus1pow_vec(m) * 8*np.pi * omegaref * (wigvals @ (prod_gammas * integral))
         if self.sup.gvar.args.precompute:
-            np.save(f"{self.sup.gvar.datadir}/submatrices/" +
+            np.save(f"{self.sup.gvar.outdir}/submatrices/" +
                     f"pc.{self.n1}.{self.ell1}-{self.n2}.{self.ell2}.npy", Cvec)
         return Cvec
 
