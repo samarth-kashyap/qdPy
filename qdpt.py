@@ -31,7 +31,7 @@ def create_argparser():
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = create_argparser()
-DIRNAME_NEW = "new_freqs_w135_half"
+DIRNAME_NEW = "w135_jesper_scipy"
 
 T1 = time.time()
 
@@ -179,6 +179,7 @@ def solve_eigprob():
 
 if __name__ == "__main__":
     analysis_modes = qdcls.qdptMode(GVAR)
+    print(f"neighbors = {analysis_modes.nl_neighbors}")
     super_matrix = analysis_modes.create_supermatrix()
 
     fdpt, fqdpt = solve_eigprob()

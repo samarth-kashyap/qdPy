@@ -45,7 +45,7 @@ class globalVars():
         # should be 2.096367060263202423e-05 for above numbers
 
         # self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
-        self.r = np.loadtxt(f"{self.datadir}/r.dat")
+        self.r = np.loadtxt(f"{self.datadir}/r.dat") - 1e-4
         self.nl_all = np.loadtxt(f"{self.datadir}/nl.dat").astype('int')
         self.nl_all_list = np.loadtxt(f"{self.datadir}/nl.dat").astype('int').tolist()
         self.omega_list = np.loadtxt(f"{self.datadir}/muhz.dat") * 1e-6 / self.OM

@@ -12,9 +12,11 @@ data = np.loadtxt('/home/g.samarth/Woodard2013/WoodardPy/HMI/hmi.6328.36')
 fig, axs = plt.subplots(ncols=2, nrows=int(imax//2), figsize=(7, int(7*imax//4)))
 fig2, axs2 = plt.subplots(ncols=2, nrows=int(imax), figsize=(7, int(3*imax)))
 
-def get_acoeffs_list(n, imax):
-    ac_n_qdpt = []
-    ac_n_dpt = []
+def get_acoeffs_list(n, imax, dpt_or_qdpt='dpt'):
+    ac_n_qdpt_antia = []
+    ac_n_qdpt_jesper = []
+    ac_n_dpt_antia = []
+    ac_n_dpt_jesper = []
     l_arr = np.array([])
     lmax = 290
     try:
@@ -34,7 +36,8 @@ def get_acoeffs_list(n, imax):
     if len(l_arr) == 0:
         return l_arr, l_arr, l_arr
 
-    dirnamenew = "w135_jesper_scipy"
+    dirname_antia = "new_freqs_w135_antia"
+    dirname_jesper = "w135_jesper_scipy"
 
     larr = np.array([])
 
@@ -43,8 +46,12 @@ def get_acoeffs_list(n, imax):
         file_found = True
         count = 0
         try:
-            fqdpt = np.load(f"{datadir}/{dirnamenew}/qdpt_opt_{n:02d}_{ell:03d}.npy")
-            fdpt = np.load(f"{datadir}/{dirnamenew}/dpt_opt_{n:02d}_{ell:03d}.npy")
+            if dpt_or_qdpt == 'dpt':
+                fdpt_antia = np.load(f"{datadir}/{dirname_antia}/dpt_opt_{n:02d}_{ell:03d}.npy")
+                fdpt_jesper = np.load(f"{datadir}/{dirname_jesper}/dpt_opt_{n:02d}_{ell:03d}.npy")
+            elif dpt_or_qdpt == 'qdpt':
+                fqdpt_antia = np.load(f"{datadir}/{dirname_antia}/qdpt_opt_{n:02d}_{ell:03d}.npy")
+                fqdpt_jesper = np.load(f"{datadir}/{dirname_jesper}/qdpt_opt_{n:02d}_{ell:03d}.npy")
         except FileNotFoundError:
             count += 1
             file_found = False
@@ -55,18 +62,26 @@ def get_acoeffs_list(n, imax):
             rlp.get_Pjl()
 
             # in nHz
-            ac_ell_qdpt = rlp.get_coeffs(fqdpt)*1000.
-            ac_ell_dpt = rlp.get_coeffs(fdpt)*1000.
-
-            nu = fqdpt[ell]
+            if dpt_or_qdpt == 'dpt':
+                ac_ell_dpt_antia = rlp.get_coeffs(fdpt_antia)*1000.
+                ac_ell_dpt_jesper = rlp.get_coeffs(fdpt_jesper)*1000.
+                ac_n_dpt_antia.append(ac_ell_dpt_antia[1:imax+1])
+                ac_n_dpt_jesper.append(ac_ell_dpt_jesper[1:imax+1])
+            elif dpt_or_qdpt == 'qdpt':
+                ac_ell_qdpt_antia = rlp.get_coeffs(fqdpt_antia)*1000.
+                ac_ell_qdpt_jesper = rlp.get_coeffs(fqdpt_jesper)*1000.
+                ac_n_qdpt_antia.append(ac_ell_qdpt_antia[1:imax+1])
+                ac_n_qdpt_jesper.append(ac_ell_qdpt_jesper[1:imax+1])
 
             larr = np.append(larr, np.array([ell]))
 
-            ac_n_qdpt.append(ac_ell_qdpt[1:imax+1])
-            ac_n_dpt.append(ac_ell_dpt[1:imax+1])
     print(f"Not found count = {count}")
+    if dpt_or_qdpt == 'dpt':
+        splits_both = (np.array(ac_n_dpt_antia), np.array(ac_n_dpt_jesper))
+    elif dpt_or_qdpt == 'qdpt':
+        splits_both = (np.array(ac_n_qdpt_antia), np.array(ac_n_qdpt_jesper))
     # return np.array(ac_n_qdpt), np.array(ac_n_dpt), nu/l_arr
-    return np.array(ac_n_qdpt), np.array(ac_n_dpt), larr
+    return splits_both, larr
 
 
 def plot_acoeff_error(ac_qdpt, ac_dpt, larr):
@@ -123,9 +138,10 @@ def plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr):
 
 
 for n in range(2):
-    ac_qdpt, ac_dpt, larr = get_acoeffs_list(n, imax)
+    splits, larr = get_acoeffs_list(n, imax, dpt_or_qdpt='qdpt')
+    sA, sJ = splits
     # fig = plot_acoeff_error(ac_qdpt, ac_dpt, larr)
-    fig2 = plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr)
+    fig2 = plot_acoeff_percenterror(sA, sJ, larr)
 # handles, labels = axs.flatten()[0].get_legend_handles_labels()
 handles2, labels2 = axs2.flatten()[0].get_legend_handles_labels()
 # fig.legend(handles[:3], labels[:3], loc='upper center')
@@ -136,4 +152,4 @@ fig2.tight_layout()
 fig2.subplots_adjust(top=0.95)
 #fig.show()
 # fig.savefig('/scratch/g.samarth/plots/acoeffs.pdf')
-fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_error.pdf')
+fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_comparison_AJ.pdf')

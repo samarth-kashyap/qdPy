@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import py3nj
 from scipy.integrate import simps
+import scipy as sp
 import functions as FN
 from tqdm import tqdm
 import time
@@ -229,7 +230,7 @@ class superMatrix():
             eigvals_all = np.diag(self.supmat_dpt)
             return eigvals_all.real
         elif type == 'QDPT':
-            eigvals_all, eigvecs = np.linalg.eigh(self.supmat)
+            eigvals_all, eigvecs = sp.linalg.eigh(self.supmat)
             return eigvals_all.real, eigvecs
 
         if sorted:
