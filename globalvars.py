@@ -61,7 +61,9 @@ class globalVars():
             self.rmin = rmin
             self.rmax = rmax
 
-        self.rmin_idx = self.get_idx(self.r, self.rmin)
+        self.rmin_idx = self.get_idx(self.r, self.rmin) + 1
+        if args.use_precomputed:
+            self.rmin_idx -= 1
         self.rmax_idx = self.get_idx(self.r, self.rmax) #+ 1
         print(f"rmin index = {self.rmin_idx}; rmax index = {self.rmax_idx}")
 
