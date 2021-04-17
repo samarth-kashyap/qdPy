@@ -41,16 +41,19 @@ def plot_eigs(n, l):
     rAmax_idx = np.argmin(abs(rA - RMAX))
     rJmin_idx = np.argmin(abs(rJ - RMIN))
     rJmax_idx = np.argmin(abs(rJ - RMAX))
-    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(14, 7))
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(14, 14))
     axs.flatten()[0].plot(rA[rAmin_idx:rAmax_idx],
                           UVA[0][rAmin_idx:rAmax_idx],
                           'k', label='Antia', linewidth=0.8)
     axs.flatten()[0].plot(rJ[rJmin_idx:rJmax_idx],
                           UVJ[0][rJmin_idx:rJmax_idx],
                           '--r', label='JCD', linewidth=0.8)
-    print(rAmin_idx, rAmax_idx)
-    print(rJmin_idx, rJmax_idx)
-    print("-----------------------------")
+    axs.flatten()[2].plot(rA[rAmin_idx:rAmax_idx],
+                          UVA[1][rAmin_idx:rAmax_idx],
+                          'k', label='Antia', linewidth=0.8)
+    axs.flatten()[2].plot(rJ[rJmin_idx:rJmax_idx],
+                          UVJ[1][rJmin_idx:rJmax_idx],
+                          '--r', label='JCD', linewidth=0.8)
 
     argmaxA = np.argmax(UVA[0])
     argmaxJ = np.argmax(UVJ[0])
@@ -62,21 +65,29 @@ def plot_eigs(n, l):
     rAmax_idx = np.argmin(abs(rA - rmax_common))
     rJmin_idx = np.argmin(abs(rJ - rmin_common))
     rJmax_idx = np.argmin(abs(rJ - rmax_common))
-    print(rAmin_idx, rAmax_idx)
-    print(rJmin_idx, rJmax_idx)
     axs.flatten()[1].plot(rA[rAmin_idx:rAmax_idx],
                           UVA[0][rAmin_idx:rAmax_idx],
                           'k', label='Antia', linewidth=0.8)
     axs.flatten()[1].plot(rJ[rJmin_idx:rJmax_idx],
                           UVJ[0][rJmin_idx:rJmax_idx],
                           '--r', label='JCD', linewidth=0.8)
+    axs.flatten()[3].plot(rA[rAmin_idx:rAmax_idx],
+                          UVA[1][rAmin_idx:rAmax_idx],
+                          'k', label='Antia', linewidth=0.8)
+    axs.flatten()[3].plot(rJ[rJmin_idx:rJmax_idx],
+                          UVJ[1][rJmin_idx:rJmax_idx],
+                          '--r', label='JCD', linewidth=0.8)
     axs.flatten()[0].legend()
     axs.flatten()[1].legend()
 
     axs.flatten()[0].set_xlabel("$r/R_\odot$")
     axs.flatten()[1].set_xlabel("$r/R_\odot$")
+    axs.flatten()[2].set_xlabel("$r/R_\odot$")
+    axs.flatten()[3].set_xlabel("$r/R_\odot$")
     axs.flatten()[0].set_ylabel("$U_{n\ell}$")
     axs.flatten()[1].set_ylabel("$U_{n\ell}$")
+    axs.flatten()[2].set_ylabel("$V_{n\ell}$")
+    axs.flatten()[3].set_ylabel("$V_{n\ell}$")
     fig.suptitle(f"$n$ = {n}, $\ell$ = {l}")
     return fig
 

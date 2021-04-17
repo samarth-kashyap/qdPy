@@ -31,7 +31,7 @@ def create_argparser():
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = create_argparser()
-DIRNAME_NEW = "w135_jesper_scipy"
+DIRNAME_NEW = "w3_jesper"
 
 T1 = time.time()
 

@@ -12,9 +12,9 @@ import time
 NAX = np.newaxis
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 WFNAME = 'w_s/w.dat'
-# WFNAME = 'w_const.dat'
-# WFNAME = 'w_const_430.dat'
-# WFNAME = 'w_jesper.dat'  # to match with jesper's data
+# WFNAME = 'w_s/w_const.dat'
+# WFNAME = 'w_s/w_const_430.dat'
+# WFNAME = 'w_s/w_jesper.dat'  # to match with jesper's data
 LOGGER.info(f"Using velocity profile - {WFNAME}")
 
 
@@ -304,9 +304,9 @@ class subMatrix():
         # -1 factor from definition of toroidal field
         wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
             [:, self.rmin_idx:self.rmax_idx] * (-1.0)
-        # wsr[0, :] *= 0.0 # setting w1 = 0
+        wsr[0, :] *= 0.0 # setting w1 = 0
         # wsr[1, :] *= 0.0 # setting w3 = 0
-        # wsr[2, :] *= 0.0 # setting w5 = 0
+        wsr[2, :] *= 0.0 # setting w5 = 0
         # wsr /= 2.0
         # integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
         integrand = Tsr * wsr   # since U and V are scaled by sqrt(rho) * r

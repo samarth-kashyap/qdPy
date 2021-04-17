@@ -36,8 +36,8 @@ def get_acoeffs_list(n, imax, dpt_or_qdpt='dpt'):
     if len(l_arr) == 0:
         return l_arr, l_arr, l_arr
 
-    dirname_antia = "new_freqs_w135_antia"
-    dirname_jesper = "w135_jesper_scipy"
+    dirname_antia = "w3_antia"
+    dirname_jesper = "w3_jesper"
 
     larr = np.array([])
 
@@ -112,9 +112,9 @@ def plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr):
     sigdata = data[maskn, 48:48+imax]
     for i in range(imax):
         axs2[i, 0].plot(larr, ac_qdpt[:, i], 'r', markersize=0.7,
-                       label='QDPT')
+                       label='Antia')
         axs2[i, 0].plot(larr, ac_dpt[:, i], 'b', markersize=0.7,
-                       label='DPT')
+                       label='Jesper')
         ac_dpt[abs(ac_dpt[:, i])<1e-15, i] = 1e-15
         axs2[i, 0].set_title(f'a{i+1} in nHz')
         diff = (ac_qdpt[:, i] - ac_dpt[:, i])
