@@ -10,7 +10,7 @@ import time
 
 
 NAX = np.newaxis
-LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
+LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.INFO)
 WFNAME = 'w_s/w.dat'
 # WFNAME = 'w_s/w_const.dat'
 # WFNAME = 'w_s/w_const_430.dat'
@@ -130,7 +130,8 @@ class qdptMode():
                              self.omega0, self.omega_neighbors)
         self.super_matrix = supmat
         t2 = time.time()
-        print("Time taken to create supermatrix = {:7.2f} seconds".format((t2-t1)))
+        LOGGER.info("Time taken to create supermatrix = {:7.2f} seconds".format((t2-t1)))
+        LOGGER.debug("Max supermatrix = {}".format(abs(supmat.supmat).max()))
         return supmat
 
     def update_supermatrix(self):
@@ -192,7 +193,6 @@ class superMatrix():
         return eigU, eigV
 
 
-
     def get_precomputed_Cvec(self, narr, larr):
         Cvec_pc = {}
         for i in range(self.dim_blocks):
@@ -214,6 +214,9 @@ class superMatrix():
                             sm.starty:sm.endy] = submat
                 self.supmat[sm.starty:sm.endy,
                             sm.startx:sm.endx] = submat.T.conj()
+                LOGGER.debug("- Max submat ({}, {}) = {}".format(sm.ell1,
+                                                                 sm.ell2,
+                                                                 abs(submat).max()))
 
     def fill_supermatrix_freqdiag(self):
         for i in range(self.dim_blocks):
@@ -310,6 +313,10 @@ class subMatrix():
         # wsr /= 2.0
         # integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
         integrand = Tsr * wsr   # since U and V are scaled by sqrt(rho) * r
+        LOGGER.debug(" -- Max wsr = {}; Max integrand = {}"\
+                     .format(abs(wsr).max(), abs(integrand).max()))
+        LOGGER.debug(" -- wsr shape = {}; Tsr shape = {}"\
+                     .format(wsr.shape, Tsr.shape))
         integral = simps(integrand, axis=1, x=self.sup.gvar.r)
         prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)
         omegaref = self.sup.omegaref
@@ -349,6 +356,8 @@ class subMatrix():
             wigval = w3j(self.ell1, s, self.ell2, -1, 0, 1)
             Tsr[i, :] = -(1 - minus1pow(self.ell1 + self.ell2 + s)) * \
                 Om1 * Om2 * wigval * eigfac / self.sup.gvar.r
+            LOGGER.debug(" -- s = {}, eigmax = {}, wigval = {}, Tsrmax = {}"\
+                         .format(s, abs(eigfac).max(), wigval, abs(Tsr[i, :]).max()))
         return Tsr
 
 

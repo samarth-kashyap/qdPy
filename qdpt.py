@@ -179,7 +179,6 @@ def solve_eigprob():
 
 if __name__ == "__main__":
     analysis_modes = qdcls.qdptMode(GVAR)
-    print(f"neighbors = {analysis_modes.nl_neighbors}")
     super_matrix = analysis_modes.create_supermatrix()
 
     fdpt, fqdpt = solve_eigprob()
