@@ -34,7 +34,7 @@ def get_acoeffs_list(n, imax):
     if len(l_arr) == 0:
         return l_arr, l_arr, l_arr
 
-    dirnamenew = "w135_jesper_scipy"
+    dirnamenew = "w135_jesper"
 
     larr = np.array([])
 
@@ -136,4 +136,4 @@ fig2.tight_layout()
 fig2.subplots_adjust(top=0.95)
 #fig.show()
 # fig.savefig('/scratch/g.samarth/plots/acoeffs.pdf')
-fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_error.pdf')
+fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_error.png')

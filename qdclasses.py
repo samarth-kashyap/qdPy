@@ -307,9 +307,9 @@ class subMatrix():
         # -1 factor from definition of toroidal field
         wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
             [:, self.rmin_idx:self.rmax_idx] * (-1.0)
-        wsr[0, :] *= 0.0 # setting w1 = 0
+        # wsr[0, :] *= 0.0 # setting w1 = 0
         # wsr[1, :] *= 0.0 # setting w3 = 0
-        wsr[2, :] *= 0.0 # setting w5 = 0
+        # wsr[2, :] *= 0.0 # setting w5 = 0
         # wsr /= 2.0
         # integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
         integrand = Tsr * wsr   # since U and V are scaled by sqrt(rho) * r

@@ -48,7 +48,7 @@ class globalVars():
         self.r = np.loadtxt(f"{self.datadir}/r.dat") - 1e-4
         self.nl_all = np.loadtxt(f"{self.datadir}/nl.dat").astype('int')
         self.nl_all_list = np.loadtxt(f"{self.datadir}/nl.dat").astype('int').tolist()
-        self.omega_list = np.loadtxt(f"{self.datadir}/muhz.dat") * 1e-6 / self.OM
+        self.omega_list = np.loadtxt(f"{self.datadir}/muhz_jesper.dat") * 1e-6 / self.OM
 
         # getting indices for minimum and maximum r
         if args.precompute:

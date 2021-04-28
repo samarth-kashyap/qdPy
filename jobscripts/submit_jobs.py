@@ -26,7 +26,7 @@ for n in range(2):
         f.write(f"#PBS -N pQ-DPT.n{n:02d}\n")
         f.write(f"#PBS -o gdnsout.n{n:02d}.log\n")
         f.write(f"#PBS -e gdnserr.n{n:02d}.log\n")
-        f.write("#PBS -l select=1:ncpus=4:mem=8gb\n")
+        f.write("#PBS -l select=1:ncpus=8:mem=64gb\n")
         f.write("#PBS -l walltime=04:30:00\n")
         if n%3 == 0:
             f.write("#PBS -q large\n")
@@ -39,6 +39,6 @@ for n in range(2):
         f.write("export PATH=$PATH:/home/apps/GnuParallel/bin\n")
         f.write("export TERM=xterm\n")
         f.write("echo $PBS_JOBID\n")
-        f.write(f"parallel --jobs 4 < /home/g.samarth/qdPy/jobscripts/ipjobs_{n:02d}.sh\n")
+        f.write(f"parallel --jobs 8 < /home/g.samarth/qdPy/jobscripts/ipjobs_{n:02d}.sh\n")
         f.write("echo \"Finished at \"`date`\n")
     os.system(f"qsub {fname}")

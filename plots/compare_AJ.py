@@ -36,8 +36,8 @@ def get_acoeffs_list(n, imax, dpt_or_qdpt='dpt'):
     if len(l_arr) == 0:
         return l_arr, l_arr, l_arr
 
-    dirname_antia = "w3_antia"
-    dirname_jesper = "w3_jesper"
+    dirname_antia = "w135_antia"
+    dirname_jesper = "w135_jesper"
 
     larr = np.array([])
 
@@ -114,7 +114,7 @@ def plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr):
         axs2[i, 0].plot(larr, ac_qdpt[:, i], 'r', markersize=0.7,
                        label='Antia')
         axs2[i, 0].plot(larr, ac_dpt[:, i], 'b', markersize=0.7,
-                       label='Jesper')
+                       label='JCD')
         ac_dpt[abs(ac_dpt[:, i])<1e-15, i] = 1e-15
         axs2[i, 0].set_title(f'a{i+1} in nHz')
         diff = (ac_qdpt[:, i] - ac_dpt[:, i])
@@ -152,4 +152,4 @@ fig2.tight_layout()
 fig2.subplots_adjust(top=0.95)
 #fig.show()
 # fig.savefig('/scratch/g.samarth/plots/acoeffs.pdf')
-fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_comparison_AJ.pdf')
+fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_comparison_AJ.png')
