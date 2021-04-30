@@ -1,5 +1,4 @@
 """Computes the eigenfrequencies using QDPT and DPT"""
-import argparse
 import logging
 import time
 import numpy as np
@@ -10,42 +9,13 @@ import qdPy.functions as FN
 import os
 
 
-# {{{ def create_argparser():
-def create_argparser():
-    """Creates argument parser for arguments passed during
-    execution of script.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--n0", help="radial order", type=int)
-    parser.add_argument("--l0", help="angular degree", type=int)
-    parser.add_argument("--precompute",
-                        help="precompute the integrals upto r=0.9",
-                        action="store_true")
-    parser.add_argument("--use_precomputed",
-                        help="use precomputed integrals",
-                        action="store_true")
-    args = parser.parse_args()
-    return args
-# }}} create_argparser()
-
-
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
-ARGS = create_argparser()
-DIRNAME_NEW = "w135_jesper"
+ARGS = FN.create_argparser()
+DIRNAME_NEW = "w135_antia"
 
 T1 = time.time()
 
-# {{{ Reading global variables
-# setting rmax as 1.2 because the entire r array needs to be used
-# in order to reproduce
-# (1) the correct normalization
-# (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
-RMIN, RMAX = 0.0, 1.2
-
-# (Since we are using lmax = 300, 0.45*300 \approx 150)
-SMAX = 5      # maximum s for constructing supermatrix
-FWINDOW = 150   # microHz
-GVAR = globalvars.globalVars(RMIN, RMAX, SMAX, FWINDOW, ARGS)
+GVAR = globalvars.globalVars(ARGS)
 # }}} global variables
 
 # creates new dir if it does not exist

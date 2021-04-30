@@ -16,3 +16,4 @@ output/*
 qdPy.egg-info/
 .config.bak
 __init__.py
+.DS_Store

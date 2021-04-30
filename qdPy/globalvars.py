@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import qdPy.functions as FN
 
 #----------------------------------------------------------------------
 #                       All qts in CGS
@@ -13,14 +14,30 @@ filenamepath = os.path.realpath(__file__)
 # taking [:-2] since we are ignoring the file name and current dirname
 # this is specific to the way the directory structure is constructed
 filepath = '/'.join(filenamepath.split('/')[:-2])   
-print(filenamepath,filepath)
 configpath = filepath
 with open(f"{configpath}/.config", "r") as f:
     dirnames = f.read().splitlines()
 
-class globalVars():
+class qdParams():
+    # {{{ Reading global variables
+    # setting rmax as 1.2 because the entire r array needs to be used
+    # in order to reproduce
+    # (1) the correct normalization
+    # (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
+    # (Since we are using lmax = 300, 0.45*300 \approx 150)
+    rmin = 0.0
+    rmax = 1.2
+    smax = 5
+    fwindow =  150 
+    args = FN.create_argparser()
+    args.n0 = 0
+    args.l0 = 150
+    args.precompute = False
+    args.use_precomputed = False
 
-    def __init__(self, rmin, rmax, smax, fwindow, args):
+class globalVars():
+    qdPars = qdParams()
+    def __init__(self, args=qdParams.args, rmin=qdPars.rmin, rmax=qdPars.rmax, smax=qdPars.smax, fwindow=qdPars.fwindow):
         # self.datadir = "/scratch/g.samarth/qdPy"
         # self.progdir = "/home/g.samarth/qdPy"
         # self.eigdir = "/scratch/g.samarth/Solar_Eigen_function/eig_files"

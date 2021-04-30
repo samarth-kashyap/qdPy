@@ -1,5 +1,6 @@
 """Misc functions needed for the module"""
 import logging
+import argparse
 
 # {{{ def create_logger(logger_name, logger_level):
 def create_logger(logger_name, logger_file, logger_level):
@@ -67,4 +68,22 @@ def create_logger_stream(logger_name, logger_file, logger_level):
     logger.addHandler(sh)
     return logger
 # }}} create_logger(logger_name, logger_level)
+
+# {{{ def create_argparser():
+def create_argparser():
+    """Creates argument parser for arguments passed during
+    execution of script.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n0", help="radial order", type=int)
+    parser.add_argument("--l0", help="angular degree", type=int)
+    parser.add_argument("--precompute",
+                        help="precompute the integrals upto r=0.9",
+                        action="store_true")
+    parser.add_argument("--use_precomputed",
+                        help="use precomputed integrals",
+                        action="store_true")
+    args = parser.parse_args()
+    return args
+# }}} create_argparser()
 

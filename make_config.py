@@ -78,6 +78,7 @@ if __name__ == "__main__":
     # creating miscellaneous directories
     create_dir(f"{cwd}/logs")
     create_dir(f"{scratch_dir}/output_files")
+    create_dir(f"{scratch_dir}/output_files/plots")
 
     # temporary directory to be deleted later
     # this is already created because of git cloning in the make file

@@ -1,14 +1,15 @@
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
+from qdPy import globalvars
+import qdPy.ritzlavely as RL
 
-sys.path.append('/home/g.samarth/qdPy')
-import ritzlavely as RL
+GVAR = globalvars.globalVars()   # some arbitraty choice of n0, l0
 
 jmax = 36
 imax = 6
-datadir = '/scratch/g.samarth/qdPy/output_files'
-data = np.loadtxt('/home/g.samarth/Woodard2013/WoodardPy/HMI/hmi.6328.36')
+outdir = GVAR.outdir
+data = np.loadtxt(f'{GVAR.datadir}/hmi.6328.36')
 fig, axs = plt.subplots(ncols=2, nrows=int(imax//2), figsize=(7, int(7*imax//4)))
 fig2, axs2 = plt.subplots(ncols=2, nrows=int(imax), figsize=(7, int(3*imax)))
 
@@ -20,12 +21,9 @@ def get_acoeffs_list(n, imax, dpt_or_qdpt='dpt'):
     l_arr = np.array([])
     lmax = 290
     try:
-        l1_arr = np.load(f"/scratch/g.samarth/csfit/l{n:02d}_used.npy")
-        l2_arr = np.load(f"/scratch/g.samarth/csfit/l{n:02d}_unused.npy")
-        l_arr = np.append(l_arr, l1_arr)
-        l_arr = np.append(l_arr, l2_arr)
-        # print(l1_arr)
-        # print(l2_arr)
+        # extracting the available modes from the hmi mode parameter file
+        mask_n = data[:,1] == n
+        l_arr = data[:,0][mask_n]
     except FileNotFoundError:
         pass
     l_arr = np.unique(l_arr)
@@ -47,11 +45,11 @@ def get_acoeffs_list(n, imax, dpt_or_qdpt='dpt'):
         count = 0
         try:
             if dpt_or_qdpt == 'dpt':
-                fdpt_antia = np.load(f"{datadir}/{dirname_antia}/dpt_opt_{n:02d}_{ell:03d}.npy")
-                fdpt_jesper = np.load(f"{datadir}/{dirname_jesper}/dpt_opt_{n:02d}_{ell:03d}.npy")
+                fdpt_antia = np.load(f"{outdir}/{dirname_antia}/dpt_opt_{n:02d}_{ell:03d}.npy")
+                fdpt_jesper = np.load(f"{outdir}/{dirname_jesper}/dpt_opt_{n:02d}_{ell:03d}.npy")
             elif dpt_or_qdpt == 'qdpt':
-                fqdpt_antia = np.load(f"{datadir}/{dirname_antia}/qdpt_opt_{n:02d}_{ell:03d}.npy")
-                fqdpt_jesper = np.load(f"{datadir}/{dirname_jesper}/qdpt_opt_{n:02d}_{ell:03d}.npy")
+                fqdpt_antia = np.load(f"{outdir}/{dirname_antia}/qdpt_opt_{n:02d}_{ell:03d}.npy")
+                fqdpt_jesper = np.load(f"{outdir}/{dirname_jesper}/qdpt_opt_{n:02d}_{ell:03d}.npy")
         except FileNotFoundError:
             count += 1
             file_found = False
@@ -60,6 +58,7 @@ def get_acoeffs_list(n, imax, dpt_or_qdpt='dpt'):
         if file_found:
             rlp = RL.ritzLavelyPoly(ell, jmax)
             rlp.get_Pjl()
+            print(f"Computing a-coeffs for n = {n}, ell = {ell}")
 
             # in nHz
             if dpt_or_qdpt == 'dpt':
@@ -91,9 +90,9 @@ def plot_acoeff_error(ac_qdpt, ac_dpt, larr):
     elldata = data[:, 0][maskn]
     splitdata = data[maskn, 12:12+imax]
     for i in range(imax):
-        axs.flatten()[i].plot(larr, ac_qdpt[:, i], 'r', markersize=0.7,
+        axs.flatten()[i].plot(larr, ac_qdpt[:, i], 'or', markersize=0.7,
                               label='QDPT')
-        axs.flatten()[i].plot(larr, ac_dpt[:, i], 'b', markersize=0.7,
+        axs.flatten()[i].plot(larr, ac_dpt[:, i], 'ob', markersize=0.7,
                               label='DPT')
         axs.flatten()[i].plot(elldata, splitdata[:, i], '+k', markersize=0.8,
                               label='HMI Pipeline')
@@ -111,9 +110,9 @@ def plot_acoeff_percenterror(ac_qdpt, ac_dpt, larr):
     splitdata = data[maskn, 12:12+imax]
     sigdata = data[maskn, 48:48+imax]
     for i in range(imax):
-        axs2[i, 0].plot(larr, ac_qdpt[:, i], 'r', markersize=0.7,
+        axs2[i, 0].plot(larr, ac_qdpt[:, i], 'or', markersize=0.7,
                        label='Antia')
-        axs2[i, 0].plot(larr, ac_dpt[:, i], 'b', markersize=0.7,
+        axs2[i, 0].plot(larr, ac_dpt[:, i], 'ob', markersize=0.7,
                        label='JCD')
         ac_dpt[abs(ac_dpt[:, i])<1e-15, i] = 1e-15
         axs2[i, 0].set_title(f'a{i+1} in nHz')
@@ -152,4 +151,4 @@ fig2.tight_layout()
 fig2.subplots_adjust(top=0.95)
 #fig.show()
 # fig.savefig('/scratch/g.samarth/plots/acoeffs.pdf')
-fig2.savefig('/scratch/g.samarth/qdPy/plots/acoeffs_comparison_AJ.png')
+fig2.savefig(f'{GVAR.outdir}/plots/acoeffs_comparison_AJ.png')
