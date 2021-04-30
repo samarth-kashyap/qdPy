@@ -3,10 +3,10 @@ import argparse
 import logging
 import time
 import numpy as np
-import qdclasses as qdcls
-import ritzlavely as RL
-import globalvars
-import functions as FN
+import qdPy.qdclasses as qdcls
+import qdPy.ritzlavely as RL
+from qdPy import globalvars
+import qdPy.functions as FN
 import os
 
 

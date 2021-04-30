@@ -4,7 +4,7 @@ import numpy as np
 import py3nj
 from scipy.integrate import simps
 import scipy as sp
-import functions as FN
+import qdPy.functions as FN
 from tqdm import tqdm
 import time
 

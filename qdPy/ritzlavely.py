@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import scipy.special as special
 import numpy.polynomial.legendre as npleg
-import functions as FN
+import qdPy.functions as FN
 
 NAX = np.newaxis
 LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
