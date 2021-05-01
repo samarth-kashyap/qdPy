@@ -6,6 +6,7 @@ import qdPy.qdclasses as qdcls
 import qdPy.ritzlavely as RL
 from qdPy import globalvars
 import qdPy.functions as FN
+import qdPy.w_Bsplines as w_Bsp
 import os
 
 
@@ -148,7 +149,8 @@ def solve_eigprob():
 
 
 if __name__ == "__main__":
-    analysis_modes = qdcls.qdptMode(GVAR)
+    spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
+    analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
     super_matrix = analysis_modes.create_supermatrix()
 
     fdpt, fqdpt = solve_eigprob()

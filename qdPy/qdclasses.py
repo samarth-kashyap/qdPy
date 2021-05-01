@@ -69,9 +69,10 @@ def gamma(ell):
     return np.sqrt((2*ell + 1)/4/np.pi)
 
 
-class qdptMode():
-    def __init__(self, gvar):
+class qdptMode:
+    def __init__(self, gvar, spline_dict):
         self.gvar = gvar
+        self.spline_dict = spline_dict
         self.n0 = gvar.n0
         self.l0 = gvar.l0
         self.smax = gvar.smax
@@ -80,6 +81,7 @@ class qdptMode():
         self.idx = self.nl_idx(self.n0, self.l0)
         self.omega0 = self.gvar.omega_list[self.idx]
         self.get_mode_neighbors_params()
+        self.spline_dict = spline_dict
 
     def nl_idx(self, n0, l0):
         try:
@@ -125,7 +127,7 @@ class qdptMode():
 
     def create_supermatrix(self):
         t1 = time.time()
-        supmat = superMatrix(self.gvar, self.num_neighbors,
+        supmat = superMatrix(self.gvar, self.spline_dict, self.num_neighbors,
                              self.nl_neighbors, self.nl_neighbors_idx,
                              self.omega0, self.omega_neighbors)
         self.super_matrix = supmat
@@ -143,9 +145,10 @@ class qdptMode():
 
 
 class superMatrix():
-    def __init__(self, gvar, dim, nl_neighbors, nl_neighbors_idx, omegaref,
+    def __init__(self, gvar, spline_dict, dim, nl_neighbors, nl_neighbors_idx, omegaref,
                  omega_neighbors):
         self.gvar = gvar
+        self.spline_dict = spline_dict
         self.omegaref = omegaref
         self.omega_neighbors = omega_neighbors
         self.dim_blocks = dim
@@ -305,8 +308,10 @@ class subMatrix():
 
         Tsr = self.compute_Tsr(s_arr)
         # -1 factor from definition of toroidal field
-        wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
-            [:, self.rmin_idx:self.rmax_idx] * (-1.0)
+        '''wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
+            [:, self.rmin_idx:self.rmax_idx] * (-1.0)'''
+        self.sup.spline_dict.get_wsr_from_Bspline()
+        wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0
         # wsr[1, :] *= 0.0 # setting w3 = 0
         # wsr[2, :] *= 0.0 # setting w5 = 0
