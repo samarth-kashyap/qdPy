@@ -17,7 +17,7 @@ class wsr_Bspline:
         # will contain the knots
         self.t = None
         # to store the spline coeffs
-        self.c1, self.c2, self.c3 = None, None, None
+        self.c1, self.c3, self.c5 = None, None, None
 
         # getting the initial guess of the spline coefficients from dpt profile
         self.wsr_dpt = np.loadtxt(f'{gvar.datadir}/{WFNAME}')\
