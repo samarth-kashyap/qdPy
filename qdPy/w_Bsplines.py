@@ -30,7 +30,8 @@ class wsr_Bspline:
     def get_spline_coeffs(self, wsr):
         w1, w3, w5 = wsr[0,:], wsr[1,:], wsr[2,:]
         # getting spline attributes (knots, coefficients, degree)
-        self.t, self.c1, __ = interpolate.splrep(self.r, w1, s=0, k=self.k, t=self.knot_locs)
+        self.t, self.c1, __ = interpolate.splrep(self.r, w1, s=0,
+                                                 k=self.k, t=self.knot_locs)
         __, self.c3, __ = interpolate.splrep(self.r, w3, s=0, k=self.k, t=self.knot_locs)
         __, self.c5, __ = interpolate.splrep(self.r, w5, s=0, k=self.k, t=self.knot_locs)
 

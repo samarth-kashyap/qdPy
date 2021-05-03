@@ -37,7 +37,8 @@ class qdParams():
 
 class globalVars():
     qdPars = qdParams()
-    def __init__(self, args=qdParams.args, rmin=qdPars.rmin, rmax=qdPars.rmax, smax=qdPars.smax, fwindow=qdPars.fwindow):
+    def __init__(self, args=qdParams.args, rmin=qdPars.rmin,
+                 rmax=qdPars.rmax, smax=qdPars.smax, fwindow=qdPars.fwindow):
         # self.datadir = "/scratch/g.samarth/qdPy"
         # self.progdir = "/home/g.samarth/qdPy"
         # self.eigdir = "/scratch/g.samarth/Solar_Eigen_function/eig_files"
