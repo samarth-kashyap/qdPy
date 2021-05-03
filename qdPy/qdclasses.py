@@ -10,7 +10,7 @@ import time
 
 
 NAX = np.newaxis
-LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.INFO)
+LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
 WFNAME = 'w_s/w.dat'
 # WFNAME = 'w_s/w_const.dat'
 # WFNAME = 'w_s/w_const_430.dat'
@@ -310,7 +310,7 @@ class subMatrix():
         # -1 factor from definition of toroidal field
         '''wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
             [:, self.rmin_idx:self.rmax_idx] * (-1.0)'''
-        self.sup.spline_dict.get_wsr_from_Bspline()
+        # self.sup.spline_dict.get_wsr_from_Bspline()
         wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0
         # wsr[1, :] *= 0.0 # setting w3 = 0

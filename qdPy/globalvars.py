@@ -50,6 +50,7 @@ class globalVars():
         self.outdir = f"{self.scratch_dir}/output_files"
         self.eigdir = f"{self.snrnmais}/eig_files"
         self.progdir = self.local_dir
+        self.hmidata = np.loadtxt(f"{self.snrnmais}/data_files/hmi.6328.36")
 
         # self.datadir = dirnames[0]
         # self.progdir = dirnames[1]
