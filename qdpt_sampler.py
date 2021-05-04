@@ -21,12 +21,20 @@ DIRNAME_NEW = "w135_antia"
 
 T1 = time.time()
 
-GVAR = globalvars.globalVars(ARGS)
+GVAR = globalvars.globalVars(args=ARGS)
+mcdict = {}
 # }}} global variables
 
 # creates new dir if it does not exist
 if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
     os.mkdir(f"{GVAR.outdir}/{DIRNAME_NEW}")
+
+
+
+def init_mcdict():
+    spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
+    mcdict['spline'] = spline_dict
+    return mcdict
 
 
 
@@ -38,9 +46,9 @@ def start_mcmc(ndim):
     else:
         LOGGER.info("Starting MC sampler")
 
-    params_per_w = ndim//3
+    rth_percent = int(mcdict['spline'].rth*100)
     params_init = np.loadtxt(f"{GVAR.datadir}/" +
-                             f"params_init_{params_per_w:02d}.txt")
+                             f"params_init_{rth_percent:03d}.txt")
 
     sampler = run_markov(params_init, maxiter=ARGS.maxiter,
                          usempi=ARGS.usempi)
@@ -106,8 +114,8 @@ def log_probability(params):
     # most expensive step is computation of log_likelihood
     # if not np.isfinite(logpr):
         # return -np.inf
-    # return logpr + log_likelihood(params)
-    return log_likelihood(params)
+    return logpr + log_likelihood(params)
+    # return log_likelihood(params)
 # }}} log_probability(params)
 
 
@@ -123,15 +131,12 @@ def log_prior(params):
     ndim = len(params)
     logpr = 0
 
-    params_per_w = ndim//3
-    true_params = np.loadtxt(f"{GVAR.datadir}/" +
-                             f"params_init_{params_per_w:02d}.txt")
-    
+    rth_percent = int(mcdict['spline'].rth*100)
+    fsuffix = f"{rth_percent:03d}.txt"
     # loading params from the saved file of upex and loex profiles
-    params_upper = np.loadtxt(f"{self.datadir}/params_init_upex{self.knot_update_num:02d}.txt",
-                   params_init)
-    params_lower = np.loadtxt(f"{self.datadir}/params_init_loex{self.knot_update_num:02d}.txt",
-                   params_init)
+    true_params = np.loadtxt(f"{GVAR.datadir}/params_init_{fsuffix}")
+    params_upper = np.loadtxt(f"{GVAR.datadir}/params_init_upex_{fsuffix}")
+    params_lower = np.loadtxt(f"{GVAR.datadir}/params_init_loex_{fsuffix}")
 
     for i in range(ndim):
         if params_lower[i] < params[i] < params_upper[i]:
@@ -150,7 +155,7 @@ def compute_res(params):
     for ell in ells:
         ARGS.l0 = ell
         ritz_degree = min(ARGS.l0//2+1, 36)
-        GVAR = globalvars.globalVars(ARGS)
+        GVAR = globalvars.globalVars(args=ARGS)
         spline_dict = w_Bsp.wsr_Bspline(GVAR)
         spline_dict.update_wsr_for_MCMC(params)
         analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
@@ -255,6 +260,7 @@ def solve_eigprob(analysis_modes):
 
 
 if __name__ == "__main__":
+    mcdict = init_mcdict()
     start_mcmc(3)
     # spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
     # analysis_modes = qdcls.qdptMode(GVAR, spline_dict)

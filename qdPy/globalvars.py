@@ -35,9 +35,10 @@ class qdParams():
     args.precompute = False
     args.use_precomputed = False
 
+
 class globalVars():
     qdPars = qdParams()
-    def __init__(self, args=qdParams.args, rmin=qdPars.rmin,
+    def __init__(self, rth=0.98, args=qdParams.args, rmin=qdPars.rmin,
                  rmax=qdPars.rmax, smax=qdPars.smax, fwindow=qdPars.fwindow):
         # self.datadir = "/scratch/g.samarth/qdPy"
         # self.progdir = "/home/g.samarth/qdPy"
@@ -75,9 +76,9 @@ class globalVars():
         # getting indices for minimum and maximum r
         if args.precompute:
             self.rmin = 0.0
-            self.rmax = 0.95
+            self.rmax = rth
         elif args.use_precomputed:
-            self.rmin = 0.95
+            self.rmin = rth
             self.rmax = rmax
         else:
             self.rmin = rmin
@@ -97,7 +98,12 @@ class globalVars():
 
         # retaining only region between rmin and rmax
         self.r = self.mask_minmax(self.r)
-        # self.rho = self.mask_minmax(self.rho)
+
+        # rth = r threshold beyond which the profiles are updated. 
+        self.rth = rth
+        self.fac_up = 2.0
+        self.fac_lo = 0.0
+        print(f"{type(self.rth)}")
 
         self.n0 = args.n0
         self.l0 = args.l0
