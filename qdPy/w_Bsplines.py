@@ -5,7 +5,7 @@ import numpy as np
 WFNAME = 'w_s/w.dat'
 
 class wsr_Bspline:
-    def __init__(self, gvar, k=3, knot_num=56, initialize=False):
+    def __init__(self, gvar, k=3, knot_num=5, initialize=False):
         self.knot_num = knot_num
         self.k = k
         self.r = gvar.r
@@ -23,17 +23,17 @@ class wsr_Bspline:
         self.datadir = gvar.datadir
         lenr = len(self.r_spline)
         r_spacing = int(lenr//knot_num)
-        rfull_filtered = self.r[::r_spacing]
-        self.knot_locs_full = rfull_filtered[1:-1]
+        r_filtered = self.r_spline[::r_spacing]
+        self.knot_locs = r_filtered[1:-1]
+        self.knot_update_num = len(self.knot_locs)
 
         # among all the knots that exist between 0 < r < 1
         # we select only the knots that lie between rth < r < 1
         # only the BSpline coefficients corresponding to these knots
         # change for different iterations/walkers of MCMC.
         # knot_update_num counts the number of such knots.
-        mask_rth = self.knot_locs_full > self.rth
-        self.knot_locs = self.knot_locs_full[mask_rth]
-        self.knot_update_num = len(self.knot_locs)
+        # mask_rth = self.knot_locs_full > self.rth
+        # self.knot_locs = self.knot_locs_full[mask_rth]
 
         # will contain the knots
         self.t = None
@@ -53,6 +53,7 @@ class wsr_Bspline:
             self.store_params_init()
         self.wsr = np.zeros_like(self.wsr_dpt) 
         self.get_wsr_from_Bspline()
+
 
     def store_params_init(self):
         fsuffix = f"{int(self.rth*100):03d}.txt"
@@ -79,9 +80,9 @@ class wsr_Bspline:
                                             return_coeffs=True) 
 
         params_init = []
-        params_init.append(c1)
-        params_init.append(c3)
-        params_init.append(c5)
+        params_init.append(c1[self.knot_mask])
+        params_init.append(c3[self.knot_mask])
+        params_init.append(c5[self.knot_mask])
 
         params_init = np.array(params_init).flatten()
         np.savetxt(f"{self.datadir}/params_init_upex_{fsuffix}", params_init)
@@ -91,9 +92,9 @@ class wsr_Bspline:
                                             return_coeffs=True) 
 
         params_init = []
-        params_init.append(c1)
-        params_init.append(c3)
-        params_init.append(c5)
+        params_init.append(c1[self.knot_mask])
+        params_init.append(c3[self.knot_mask])
+        params_init.append(c5[self.knot_mask])
 
         params_init = np.array(params_init).flatten()
         np.savetxt(f"{self.datadir}/params_init_loex_{fsuffix}", params_init)
@@ -147,19 +148,15 @@ class wsr_Bspline:
     def create_nearsurface_profile(self, idx, which_ex='upex'):
         w_dpt = self.wsr_dpt[idx, :]
         w_new = np.zeros_like(w_dpt)
+
         matching_function = self.get_matching_function()
 
-        if which_ex == 'upex':
-            if idx == 0: scale_factor = 1.1
-            else: scale_factor = self.gvar.fac_up
-        else:
-            if idx == 0: scale_factor = 0.9 
-            else: scale_factor = self.gvar.fac_lo
+        if (which_ex == 'upex'): scale_factor = self.gvar.fac_up[idx]
+        else: scale_factor = self.gvar.fac_lo[idx]
 
-        # nea surface enhanced or suppressed profile
+        # near surface enhanced or suppressed profile
+        # & adding the complementary part below the rth
         w_new = matching_function * scale_factor * w_dpt
-
-        # adding the complementary part below the rth
         w_new += (1 - matching_function) * w_dpt
 
         return w_new

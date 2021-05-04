@@ -26,7 +26,7 @@ class qdParams():
     # (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
     # (Since we are using lmax = 300, 0.45*300 \approx 150)
     rmin = 0.0
-    rmax = 1.2
+    rmax = 1.0
     smax = 5
     fwindow =  150 
     args = FN.create_argparser()
@@ -68,7 +68,7 @@ class globalVars():
         # should be 2.096367060263202423e-05 for above numbers
 
         # self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
-        self.r = np.loadtxt(f"{self.datadir}/r.dat") - 1e-4
+        self.r = np.loadtxt(f"{self.datadir}/r.dat")
         self.nl_all = np.loadtxt(f"{self.datadir}/nl.dat").astype('int')
         self.nl_all_list = np.loadtxt(f"{self.datadir}/nl.dat").astype('int').tolist()
         self.omega_list = np.loadtxt(f"{self.datadir}/muhz.dat") * 1e-6 / self.OM
@@ -101,8 +101,8 @@ class globalVars():
 
         # rth = r threshold beyond which the profiles are updated. 
         self.rth = rth
-        self.fac_up = 2.0
-        self.fac_lo = 0.0
+        self.fac_up = np.array([1.1, 2.0, 2.0])
+        self.fac_lo = np.array([0.9, 0.0, 0.0])
         print(f"{type(self.rth)}")
 
         self.n0 = args.n0
