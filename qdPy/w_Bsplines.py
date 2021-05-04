@@ -107,7 +107,7 @@ class wsr_Bspline:
 
     def get_wsr_from_Bspline(self):
         # the non-fitting part
-        self.wsr[:,:self.rth] = self.wsr_dpt[:,:self.rth]
+        self.wsr[:,:self.r_th_ind] = self.wsr_dpt[:,:self.r_th_ind]
 
 
         # the fitting part
