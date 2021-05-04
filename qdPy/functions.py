@@ -98,3 +98,21 @@ def create_argparser():
     return args
 # }}} create_argparser()
 
+# functions to create the extreme profiles near the surface to get the 
+# range of spline coefficients for MCMC simulations
+def get_matching_function(r, r_th):
+    return 0.5*(np.tanh((r-r_th)/0.05) + 1)
+
+def create_nearsurface_profile(r, r_th, w_dpt, which_ex='upex'):
+    w_new = np.zeros_like(w_dpt)
+    matching_function = get_matching_function(r, r_th)
+    
+    # nea surface enhanced or suppressed profile
+    if(which_ex == 'upex'): w_new = matching_function * (fac_up * w_dpt)
+    else: w_new = matching_function * (fac_lo * w_dpt)
+        
+    # adding the complementary part below the r_th
+    w_new += (1 - matching_function) * w_dpt
+    
+    return w_new
+

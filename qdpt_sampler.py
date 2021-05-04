@@ -126,14 +126,12 @@ def log_prior(params):
     params_per_w = ndim//3
     true_params = np.loadtxt(f"{GVAR.datadir}/" +
                              f"params_init_{params_per_w:02d}.txt")
-
-    # flat prior has uniform probability between upper and lower limits
-    # and 0 everywhere else; defining arrays for upper and lower limits
-    params_upper = np.zeros_like(true_params)
-    params_lower = np.zeros_like(true_params)
-
-    params_upper = 15*true_params
-    params_lower = 0.005*true_params
+    
+    # loading params from the saved file of upex and loex profiles
+    params_upper = np.loadtxt(f"{self.datadir}/params_init_upex{self.knot_update_num:02d}.txt",
+                   params_init)
+    params_lower = np.loadtxt(f"{self.datadir}/params_init_loex{self.knot_update_num:02d}.txt",
+                   params_init)
 
     for i in range(ndim):
         if params_lower[i] < params[i] < params_upper[i]:
