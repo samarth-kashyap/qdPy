@@ -10,6 +10,7 @@ import qdPy.w_Bsplines as w_Bsp
 from schwimmbad import MPIPool
 from multiprocessing import Pool
 from multiprocessing import cpu_count
+import matplotlib.pyplot as plt
 import os
 import emcee
 import pickle as pkl
@@ -21,13 +22,21 @@ DIRNAME_NEW = "w135_antia"
 
 T1 = time.time()
 
-GVAR = globalvars.globalVars(ARGS)
+GVAR = globalvars.globalVars(args=ARGS)
+mcdict = {}
 # }}} global variables
 
 # creates new dir if it does not exist
 if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
     os.mkdir(f"{GVAR.outdir}/{DIRNAME_NEW}")
 
+
+
+def init_mcdict():
+    spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
+    mcdict['spline'] = spline_dict
+    mcdict['counter'] = 0
+    return mcdict
 
 
 # {{{ def start_mcmc():
@@ -38,9 +47,9 @@ def start_mcmc(ndim):
     else:
         LOGGER.info("Starting MC sampler")
 
-    params_per_w = ndim//3
+    rth_percent = int(mcdict['spline'].rth*100)
     params_init = np.loadtxt(f"{GVAR.datadir}/" +
-                             f"params_init_{params_per_w:02d}.txt")
+                             f"params_init_{rth_percent:03d}.txt")
 
     sampler = run_markov(params_init, maxiter=ARGS.maxiter,
                          usempi=ARGS.usempi)
@@ -60,11 +69,14 @@ def run_markov(params_init, maxiter=10, parallel=False,
                backend=None, usempi=False):
     nwalkers = 2*len(params_init) + 1
     ndim = len(params_init)
-    psig = abs(params_init/10)
-    params_init = (params_init.reshape(1, ndim) +
-                  abs(np.random.randn(nwalkers, ndim)*psig.reshape(1, ndim)))
+    psig = abs(params_init)
+    params_init = params_init.reshape(1, ndim) * np.ones((nwalkers, ndim))
 
-    # prior_type = mcdict['prior_type']
+    facdiff = GVAR.fac_up - GVAR.fac_lo
+    slice1, slice2 = ndim//3, 2*ndim//3
+    params_init[:, :slice1] *= (1 + (np.random.rand(nwalkers, ndim//3) - 0.5)*facdiff[0])
+    params_init[:, slice1:slice2] *= (1 + (np.random.rand(nwalkers, ndim//3) - 0.5)*facdiff[1])
+    params_init[:, slice2:] *= (1 + (np.random.rand(nwalkers, ndim//3) - 0.5)*facdiff[2])
 
     if parallel:
         print(f"Running Parallel")
@@ -106,8 +118,8 @@ def log_probability(params):
     # most expensive step is computation of log_likelihood
     # if not np.isfinite(logpr):
         # return -np.inf
-    # return logpr + log_likelihood(params)
-    return log_likelihood(params)
+    return logpr + log_likelihood(params)
+    # return log_likelihood(params)
 # }}} log_probability(params)
 
 
@@ -123,15 +135,12 @@ def log_prior(params):
     ndim = len(params)
     logpr = 0
 
-    params_per_w = ndim//3
-    true_params = np.loadtxt(f"{GVAR.datadir}/" +
-                             f"params_init_{params_per_w:02d}.txt")
-    
+    rth_percent = int(mcdict['spline'].rth*100)
+    fsuffix = f"{rth_percent:03d}.txt"
     # loading params from the saved file of upex and loex profiles
-    params_upper = np.loadtxt(f"{self.datadir}/params_init_upex{self.knot_update_num:02d}.txt",
-                   params_init)
-    params_lower = np.loadtxt(f"{self.datadir}/params_init_loex{self.knot_update_num:02d}.txt",
-                   params_init)
+    true_params = np.loadtxt(f"{GVAR.datadir}/params_init_{fsuffix}")
+    params_upper = np.loadtxt(f"{GVAR.datadir}/params_init_upex_{fsuffix}")
+    params_lower = np.loadtxt(f"{GVAR.datadir}/params_init_loex_{fsuffix}")
 
     for i in range(ndim):
         if params_lower[i] < params[i] < params_upper[i]:
@@ -147,12 +156,34 @@ def compute_res(params):
     n = ARGS.n0
     ells = np.arange(ARGS.lmin, ARGS.lmax+1)
     res = 0.0
+    counter = 0
+
+    # setting dummy l0 in order to use the spline_dict
+    ARGS.l0 = ells[0]
+    GVAR = globalvars.globalVars(args=ARGS)
+    spline_dict = w_Bsp.wsr_Bspline(GVAR)
+    spline_dict.update_wsr_for_MCMC(params)
+    _wsr = spline_dict.wsr
+    _wsrdpt = spline_dict.wsr_dpt
+    fig, axs = plt.subplots(3)
+    axs[0].plot(spline_dict.r, _wsr[0, :], '--r')
+    axs[0].plot(spline_dict.r, _wsrdpt[0, :], 'k')
+    axs[0].set_ylim([_wsrdpt[0, :].min(), _wsrdpt[0, :].max()*2.1])
+    axs[1].plot(spline_dict.r, _wsr[1, :], '--r')
+    axs[1].plot(spline_dict.r, _wsrdpt[1, :], 'k')
+    axs[1].set_ylim([_wsrdpt[1, :].min(), _wsrdpt[1, :].max()*2.1])
+    axs[2].plot(spline_dict.r, _wsr[2, :], '--r')
+    axs[2].plot(spline_dict.r, _wsrdpt[2, :], 'k')
+    axs[2].set_ylim([_wsrdpt[2, :].min(), _wsrdpt[2, :].max()*2.1])
+    counter_plot = mcdict['counter']
+    fig.savefig(f"{GVAR.outdir}/plots/wsr_{counter_plot:02d}.png")
+    plt.close(fig)
+    mcdict['counter'] += 1
+
     for ell in ells:
         ARGS.l0 = ell
         ritz_degree = min(ARGS.l0//2+1, 36)
-        GVAR = globalvars.globalVars(ARGS)
-        spline_dict = w_Bsp.wsr_Bspline(GVAR)
-        spline_dict.update_wsr_for_MCMC(params)
+        GVAR = globalvars.globalVars(args=ARGS)
         analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
         super_matrix = analysis_modes.create_supermatrix()
 
@@ -164,13 +195,20 @@ def compute_res(params):
         acoeffs_qdpt = get_RL_coeffs(analysis_modes, GVAR, fqdpt, ritz_degree)
 
         mask_nl = (GVAR.hmidata[:, 0] == ARGS.l0)*(GVAR.hmidata[:, 1] == ARGS.n0)
-        splitdata = GVAR.hmidata[mask_nl, 12:12+ritz_degree]
-        sigdata = GVAR.hmidata[mask_nl, 48:48+ritz_degree]
+        splitdata = GVAR.hmidata[mask_nl, 12:12+ritz_degree].flatten()
+        sigdata = GVAR.hmidata[mask_nl, 48:48+ritz_degree].flatten()
+
+        plt.figure()
+        plt.plot(np.arange(35), acoeffs_qdpt[2:], 'ok')
+        plt.plot(np.arange(35), splitdata[1:], 'xr')
+        plt.savefig(f"{GVAR.outdir}/plots/acoeffs_{ell:03d}_{counter_plot:02d}.png")
+        plt.close()
 
         res += np.sum(((acoeffs_qdpt[1:] - splitdata)**2)/(sigdata**2))
+        counter += len(splitdata)
     print(f"==========RES = {res} =================")
     print(f"==========params = {params} =================")
-    return res
+    return res/counter
 # }}} compute_res(params)
 
 
@@ -255,6 +293,7 @@ def solve_eigprob(analysis_modes):
 
 
 if __name__ == "__main__":
+    mcdict = init_mcdict()
     start_mcmc(3)
     # spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
     # analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
