@@ -7,6 +7,7 @@ import qdPy.ritzlavely as RL
 from qdPy import globalvars
 import qdPy.functions as FN
 import qdPy.w_Bsplines as w_Bsp
+from mpi4py import MPI
 from schwimmbad import MPIPool
 from multiprocessing import Pool
 from multiprocessing import cpu_count
@@ -43,6 +44,8 @@ def init_mcdict():
 def start_mcmc(ndim):
     """ Starts the MCMC sampler. """
     if ARGS.usempi:
+        comm = MPI.COMM_WORLD
+        mpirank = comm.Get_rank()
         LOGGER.info(f"Process {mpirank:3d}: Starting MC sampler")
     else:
         LOGGER.info("Starting MC sampler")
@@ -92,6 +95,8 @@ def run_markov(params_init, maxiter=10, parallel=False,
             sampler.run_mcmc(params_init, maxiter, progress=True)
             # , backend=backend)
     elif usempi:
+        comm = MPI.COMM_WORLD
+        mpirank = comm.Get_rank()
         print(f"Process {mpirank:3d}: Running MPI")
         with MPIPool() as pool:
             if not pool.is_master():
