@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import os
 import emcee
 import pickle as pkl
+import os, psutil; 
 
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
@@ -34,9 +35,21 @@ if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
 
 
 def init_mcdict():
-    spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
+    if ARGS.usempi:
+        spline_dict = w_Bsp.wsr_Bspline(GVAR) #, initialize=True)
+    else:
+        spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
     mcdict['spline'] = spline_dict
     mcdict['counter'] = 0
+
+    rth_percent = int(mcdict['spline'].rth*100)
+    fsuffix = f"{rth_percent:03d}.txt"
+    true_params = np.loadtxt(f"{GVAR.datadir}/params_init_{fsuffix}")
+    params_upper = np.loadtxt(f"{GVAR.datadir}/params_init_upex_{fsuffix}")
+    params_lower = np.loadtxt(f"{GVAR.datadir}/params_init_loex_{fsuffix}")
+    mcdict['true_params'] = true_params
+    mcdict['params_upper'] = params_upper
+    mcdict['params_lower'] = params_lower
     return mcdict
 
 
@@ -72,6 +85,9 @@ def run_markov(params_init, maxiter=10, parallel=False,
                backend=None, usempi=False):
     nwalkers = 2*len(params_init) + 1
     ndim = len(params_init)
+    print(f"Starting MCMC ...")
+    print(f"- Numer of parameters = {ndim}")
+    print(f"- Numer of walkers = {nwalkers}")
     psig = abs(params_init)
     params_init = params_init.reshape(1, ndim) * np.ones((nwalkers, ndim))
 
@@ -143,9 +159,9 @@ def log_prior(params):
     rth_percent = int(mcdict['spline'].rth*100)
     fsuffix = f"{rth_percent:03d}.txt"
     # loading params from the saved file of upex and loex profiles
-    true_params = np.loadtxt(f"{GVAR.datadir}/params_init_{fsuffix}")
-    params_upper = np.loadtxt(f"{GVAR.datadir}/params_init_upex_{fsuffix}")
-    params_lower = np.loadtxt(f"{GVAR.datadir}/params_init_loex_{fsuffix}")
+    true_params = mcdict['true_params']
+    params_upper = mcdict['params_upper']
+    params_lower = mcdict['params_lower']
 
     for i in range(ndim):
         if params_lower[i] < params[i] < params_upper[i]:
@@ -170,19 +186,19 @@ def compute_res(params):
     spline_dict.update_wsr_for_MCMC(params)
     _wsr = spline_dict.wsr
     _wsrdpt = spline_dict.wsr_dpt
-    fig, axs = plt.subplots(3)
-    axs[0].plot(spline_dict.r, _wsr[0, :], '--r')
-    axs[0].plot(spline_dict.r, _wsrdpt[0, :], 'k')
-    axs[0].set_ylim([_wsrdpt[0, :].min(), _wsrdpt[0, :].max()*2.1])
-    axs[1].plot(spline_dict.r, _wsr[1, :], '--r')
-    axs[1].plot(spline_dict.r, _wsrdpt[1, :], 'k')
-    axs[1].set_ylim([_wsrdpt[1, :].min(), _wsrdpt[1, :].max()*2.1])
-    axs[2].plot(spline_dict.r, _wsr[2, :], '--r')
-    axs[2].plot(spline_dict.r, _wsrdpt[2, :], 'k')
-    axs[2].set_ylim([_wsrdpt[2, :].min(), _wsrdpt[2, :].max()*2.1])
-    counter_plot = mcdict['counter']
-    fig.savefig(f"{GVAR.outdir}/plots/wsr_{counter_plot:02d}.png")
-    plt.close(fig)
+    # fig, axs = plt.subplots(3)
+    # axs[0].plot(spline_dict.r, _wsr[0, :], '--r')
+    # axs[0].plot(spline_dict.r, _wsrdpt[0, :], 'k')
+    # axs[0].set_ylim([_wsrdpt[0, :].min(), _wsrdpt[0, :].max()*2.1])
+    # axs[1].plot(spline_dict.r, _wsr[1, :], '--r')
+    # axs[1].plot(spline_dict.r, _wsrdpt[1, :], 'k')
+    # axs[1].set_ylim([_wsrdpt[1, :].min(), _wsrdpt[1, :].max()*2.1])
+    # axs[2].plot(spline_dict.r, _wsr[2, :], '--r')
+    # axs[2].plot(spline_dict.r, _wsrdpt[2, :], 'k')
+    # axs[2].set_ylim([_wsrdpt[2, :].min(), _wsrdpt[2, :].max()*2.1])
+    # counter_plot = mcdict['counter']
+    # fig.savefig(f"{GVAR.outdir}/plots/wsr_{counter_plot:02d}.png")
+    # plt.close(fig)
     mcdict['counter'] += 1
 
     for ell in ells:
@@ -203,16 +219,19 @@ def compute_res(params):
         splitdata = GVAR.hmidata[mask_nl, 12:12+ritz_degree].flatten()
         sigdata = GVAR.hmidata[mask_nl, 48:48+ritz_degree].flatten()
 
-        plt.figure()
-        plt.plot(np.arange(35), acoeffs_qdpt[2:], 'ok')
-        plt.plot(np.arange(35), splitdata[1:], 'xr')
-        plt.savefig(f"{GVAR.outdir}/plots/acoeffs_{ell:03d}_{counter_plot:02d}.png")
-        plt.close()
+        # plt.figure()
+        # plt.plot(np.arange(35), acoeffs_qdpt[2:], 'ok')
+        # plt.plot(np.arange(35), splitdata[1:], 'xr')
+        # plt.savefig(f"{GVAR.outdir}/plots/acoeffs_{ell:03d}_{counter_plot:02d}.png")
+        # plt.close()
 
         res += np.sum(((acoeffs_qdpt[1:] - splitdata)**2)/(sigdata**2))
         counter += len(splitdata)
     print(f"==========RES = {res} =================")
     print(f"==========params = {params} =================")
+    print(f'Memory used = {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3} GB')
+    T2 = time.time()
+    print(f"Ttal time taken = {(T2-T1)/60:7.3f} minutes")
     return res/counter
 # }}} compute_res(params)
 

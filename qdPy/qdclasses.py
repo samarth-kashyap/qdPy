@@ -209,7 +209,8 @@ class superMatrix():
 
     def fill_supermatrix(self):
         LOGGER.info("Creating submatrices for: ")
-        for i in tqdm(range(self.dim_blocks), desc='Submatrices'):
+        for i in tqdm(range(self.dim_blocks), desc=f'Submatrices for l0={self.gvar.l0}'):
+        # for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
                 submat = sm.get_submat()

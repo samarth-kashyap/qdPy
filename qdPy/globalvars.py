@@ -91,7 +91,7 @@ class globalVars():
         if self.rmin == 0:
             self.rmin_idx += 1
         self.rmax_idx = self.get_idx(self.r, self.rmax)
-        print(f"rmin index = {self.rmin_idx}; rmax index = {self.rmax_idx}")
+        # print(f"rmin index = {self.rmin_idx}; rmax index = {self.rmax_idx}")
 
         self.smax = smax
         self.fwindow = fwindow
@@ -103,7 +103,6 @@ class globalVars():
         self.rth = rth
         self.fac_up = np.array([1.1, 2.0, 2.0])
         self.fac_lo = np.array([0.9, 0.0, 0.0])
-        print(f"{type(self.rth)}")
 
         self.n0 = args.n0
         self.l0 = args.l0

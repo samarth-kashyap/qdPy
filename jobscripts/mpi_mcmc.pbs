@@ -1,0 +1,22 @@
+#!/bin/bash
+#PBS -N rot-qdpt
+#PBS -o rotout.log
+#PBS -e roterr.log
+#PBS -l select=1:ncpus=27:mpiprocs=27:mem=90gb
+#PBS -l walltime=45:00:00
+#PBS -q large
+echo "Starting at "`date`
+cd /home/g.samarth/qdPy/
+export TERM=xterm
+echo $PBS_JOBID
+echo $PBS_NODEFILE
+
+EXECPATH="/home/g.samarth/qdPy/qdpt_sampler.py --n 0 --lmin 200 --lmax 240 --maxiter 500 --usempi"
+PYTHONPATH="/home/g.samarth/anaconda3/bin/python"
+MPIPATH="/home/g.samarth/anaconda3/bin/mpirun"
+OUTFILE="/home/g.samarth/qdPy/jobscripts/pyout.log"
+ERRFILE="/home/g.samarth/qdPy/jobscripts/pyerr.log"
+
+$MPIPATH -n 27 -machinefile $PBS_NODEFILE $PYTHONPATH $EXECPATH >$OUTFILE 2>$ERRFILE
+
+echo "Finished at "`date`
