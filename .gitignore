@@ -9,6 +9,7 @@ plots/*.output
 *.splits
 *.pdf
 *.png
+*.err
 .config
 output/*
 *.log
@@ -17,3 +18,4 @@ qdPy.egg-info/
 .config.bak
 __init__.py
 .DS_Store
+*~
