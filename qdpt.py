@@ -17,6 +17,7 @@ DIRNAME_NEW = "w135_antia"
 T1 = time.time()
 
 GVAR = globalvars.globalVars(ARGS)
+
 # }}} global variables
 
 # creates new dir if it does not exist

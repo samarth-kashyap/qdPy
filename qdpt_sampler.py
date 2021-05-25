@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import os
 import emcee
 import pickle as pkl
-import os, psutil; 
+import os, psutil, sys; 
 
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
@@ -39,6 +39,8 @@ def init_mcdict():
         spline_dict = w_Bsp.wsr_Bspline(GVAR) #, initialize=True)
     else:
         spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
+        sys.exit()  # creating the upex and loex once before MPI run
+
     mcdict['spline'] = spline_dict
     mcdict['counter'] = 0
 
@@ -54,7 +56,7 @@ def init_mcdict():
 
 
 # {{{ def start_mcmc():
-def start_mcmc(ndim):
+def start_mcmc():
     """ Starts the MCMC sampler. """
     if ARGS.usempi:
         comm = MPI.COMM_WORLD
@@ -318,7 +320,7 @@ def solve_eigprob(analysis_modes):
 
 if __name__ == "__main__":
     mcdict = init_mcdict()
-    start_mcmc(3)
+    start_mcmc()
     # spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
     # analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
     # super_matrix = analysis_modes.create_supermatrix()

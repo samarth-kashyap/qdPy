@@ -1,0 +1,23 @@
+name: tf2-gpu
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.7
+  - tensorflow
+  - tensorboard
+  - tensorflow-probability
+  - numpy
+  - scipy
+  - ipython
+  - matplotlib
+  - astropy
+  - sympy
+  - pip
+  - emcee
+  - schwimmbad
+  - psutil
+  - tqdm
+  - pip:
+    - mpi4py
+    - py3nj
