@@ -21,6 +21,8 @@ import os, psutil, sys;
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
 ARGS = FN.create_argparser()
 DIRNAME_NEW = "w135_antia"
+sys.stderr = open("pyerr.log", "w", buffering=1)
+sys.stdout = open("pyout.log", "w", buffering=1)
 
 T1 = time.time()
 
@@ -39,7 +41,7 @@ def init_mcdict():
         spline_dict = w_Bsp.wsr_Bspline(GVAR) #, initialize=True)
     else:
         spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
-        sys.exit()  # creating the upex and loex once before MPI run
+        # sys.exit()  # creating the upex and loex once before MPI run
 
     mcdict['spline'] = spline_dict
     mcdict['counter'] = 0
@@ -70,7 +72,7 @@ def start_mcmc():
                              f"params_init_{rth_percent:03d}.txt")
 
     sampler = run_markov(params_init, maxiter=ARGS.maxiter,
-                         usempi=ARGS.usempi)
+                         usempi=ARGS.usempi, parallel=args.parallel)
                          # parallel=args.parallel, usempi=ARGS.usempi)
 
     targetdir = f"{GVAR.outdir}/{DIRNAME_NEW}"
@@ -202,6 +204,7 @@ def compute_res(params):
     # fig.savefig(f"{GVAR.outdir}/plots/wsr_{counter_plot:02d}.png")
     # plt.close(fig)
     mcdict['counter'] += 1
+    titer1 = time.time()
 
     for ell in ells:
         ARGS.l0 = ell
@@ -232,7 +235,9 @@ def compute_res(params):
     print(f"==========RES = {res} =================")
     print(f"==========params = {params} =================")
     print(f'Memory used = {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3} GB')
+    titer2 = time.time()
     T2 = time.time()
+    print(f" - time taken for iteration = {(titer2-titer1):7.3f} seconds")
     print(f"Total time taken = {(T2-T1)/60:7.3f} minutes")
     return res/counter
 # }}} compute_res(params)
