@@ -231,7 +231,7 @@ def compute_res(params):
     print(f"==========params = {params} =================")
     print(f'Memory used = {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3} GB')
     T2 = time.time()
-    print(f"Ttal time taken = {(T2-T1)/60:7.3f} minutes")
+    print(f"Total time taken = {(T2-T1)/60:7.3f} minutes")
     return res/counter
 # }}} compute_res(params)
 
