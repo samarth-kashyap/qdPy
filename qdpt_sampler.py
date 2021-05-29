@@ -35,7 +35,6 @@ if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
     os.mkdir(f"{GVAR.outdir}/{DIRNAME_NEW}")
 
 
-
 def init_mcdict():
     if ARGS.usempi:
         spline_dict = w_Bsp.wsr_Bspline(GVAR) #, initialize=True)
@@ -72,7 +71,7 @@ def start_mcmc():
                              f"params_init_{rth_percent:03d}.txt")
 
     sampler = run_markov(params_init, maxiter=ARGS.maxiter,
-                         usempi=ARGS.usempi, parallel=args.parallel)
+                         usempi=ARGS.usempi, parallel=ARGS.parallel)
                          # parallel=args.parallel, usempi=ARGS.usempi)
 
     targetdir = f"{GVAR.outdir}/{DIRNAME_NEW}"
@@ -172,7 +171,7 @@ def log_prior(params):
             logpr += -np.log(abs(params_upper[i] - params_lower[i]))
         else:
             logpr += -np.inf
-    return logpr
+    return -1.0 #logpr
 # }}} log_prior(self, params)
 
 
@@ -207,6 +206,9 @@ def compute_res(params):
     titer1 = time.time()
 
     for ell in ells:
+        temp = 1.0
+        time.sleep(2.5)
+        """
         ARGS.l0 = ell
         ritz_degree = min(ARGS.l0//2+1, 36)
         GVAR = globalvars.globalVars(args=ARGS)
@@ -232,14 +234,17 @@ def compute_res(params):
 
         res += np.sum(((acoeffs_qdpt[1:] - splitdata)**2)/(sigdata**2))
         counter += len(splitdata)
-    print(f"==========RES = {res} =================")
-    print(f"==========params = {params} =================")
-    print(f'Memory used = {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3} GB')
+        """
+    # print(f"==========RES = {res} =================")
+    # print(f"==========params = {params} =================")
+    # print(f'Memory used = {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3} GB')
     titer2 = time.time()
     T2 = time.time()
-    print(f" - time taken for iteration = {(titer2-titer1):7.3f} seconds")
-    print(f"Total time taken = {(T2-T1)/60:7.3f} minutes")
-    return res/counter
+    print(f"[Rank: {MPI.COMM_WORLD.Get_rank()}] - time taken for iteration = " +
+          f"{(titer2-titer1):7.3f} seconds")
+    # print(f"[Rank: {MPI.COMM_WORLD.Get_rank()}] - Total time taken = " +
+          # f"{(T2-T1)/60:7.3f} minutes")
+    return 1.0 #res/counter
 # }}} compute_res(params)
 
 
@@ -324,8 +329,17 @@ def solve_eigprob(analysis_modes):
 
 
 if __name__ == "__main__":
-    mcdict = init_mcdict()
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    dict_exists = False
+    if rank == 0:
+        mcdict = init_mcdict()
+        dict_exists = True
+    else:
+        mcdict = None
+    mcdict = comm.bcast(mcdict, root=0)
     start_mcmc()
+
     # spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
     # analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
     # super_matrix = analysis_modes.create_supermatrix()

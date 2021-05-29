@@ -6,6 +6,7 @@ from scipy.integrate import simps
 import scipy as sp
 import qdPy.functions as FN
 from tqdm import tqdm
+from mpi4py import MPI
 import time
 
 
@@ -209,8 +210,9 @@ class superMatrix():
 
     def fill_supermatrix(self):
         LOGGER.info("Creating submatrices for: ")
-        for i in tqdm(range(self.dim_blocks), desc=f'Submatrices for l0={self.gvar.l0}'):
-        # for i in range(self.dim_blocks):
+        # for i in tqdm(range(self.dim_blocks), desc=f'[Rank: {MPI.COMM_WORLD.Get_rank()}] Submatrices for l0={self.gvar.l0}'):
+        print(f"[Rank: {MPI.COMM_WORLD.Get_rank()}] Creating submatrices: ")
+        for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
                 submat = sm.get_submat()
