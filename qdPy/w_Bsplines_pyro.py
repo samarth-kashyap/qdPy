@@ -2,6 +2,7 @@ from scipy.interpolate import BSpline as BSp
 from scipy import interpolate
 import jax.numpy as np
 import numpy as onp
+from jax.ops import index, index_add, index_update
 
 WFNAME = 'w_s/w.dat'
 
@@ -48,7 +49,7 @@ class wsr_Bspline:
         # getting coefficients for the r_spline part
         self.get_spline_coeffs(self.wsr_dpt[:, self.rth_ind:])       
         self.knot_mask = np.zeros_like(self.t, dtype=np.bool_)
-        self.knot_mask[-self.knot_update_num-self.k-1:-self.k-1] = True
+        self.knot_mask = index_update(self.knot_mask, index[-self.knot_update_num-self.k-1:-self.k-1], True)
 
         if initialize:
             self.store_params_init()
@@ -118,17 +119,21 @@ class wsr_Bspline:
 
     def get_wsr_from_Bspline(self):
         # the non-fitting part
-        self.wsr[:, :self.rth_ind] = self.wsr_dpt[:, :self.rth_ind]
+        # self.wsr[:, :self.rth_ind] = self.wsr_dpt[:, :self.rth_ind]
+        self.wsr = index_update(self.wsr, index[:, :self.rth_ind], self.wsr_dpt[:, :self.rth_ind])
 
         # the fitting part
         spline = BSp(self.t, self.c1, self.k, extrapolate=True)
-        self.wsr[0, self.rth_ind:] = spline(self.r_spline)
+        # self.wsr[0, self.rth_ind:] = spline(self.r_spline)
+        self.wsr = index_update(self.wsr, index[0, self.rth_ind:], spline(self.r_spline))
 
         spline = BSp(self.t, self.c3, self.k, extrapolate=True)
-        self.wsr[1, self.rth_ind:] = spline(self.r_spline)
+        # self.wsr[1, self.rth_ind:] = spline(self.r_spline)
+        self.wsr = index_update(self.wsr, index[1, self.rth_ind:], spline(self.r_spline))
 
         spline = BSp(self.t, self.c5, self.k, extrapolate=True)
-        self.wsr[2, self.rth_ind:] = spline(self.r_spline)
+        # self.wsr[2, self.rth_ind:] = spline(self.r_spline)
+        self.wsr = index_update(self.wsr, index[2, self.rth_ind:], spline(self.r_spline))
 
 
     def update_wsr_for_MCMC(self, params):
