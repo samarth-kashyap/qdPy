@@ -186,8 +186,8 @@ def compute_res(params):
     GVAR = globalvars.globalVars(args=ARGS)
     spline_dict = w_Bsp.wsr_Bspline(GVAR)
     spline_dict.update_wsr_for_MCMC(params)
-    _wsr = spline_dict.wsr
-    _wsrdpt = spline_dict.wsr_dpt
+    # _wsr = spline_dict.wsr
+    # _wsrdpt = spline_dict.wsr_dpt
     # fig, axs = plt.subplots(3)
     # axs[0].plot(spline_dict.r, _wsr[0, :], '--r')
     # axs[0].plot(spline_dict.r, _wsrdpt[0, :], 'k')
