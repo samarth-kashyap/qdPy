@@ -9,9 +9,12 @@ from numpyro.infer import MCMC, NUTS, HMC
 import scipy.sparse
 import sys
 import numpy as onp
+from scipy.interpolate import BSpline as BSp
 
 from qdPy import functions as FN
 from qdPy import globalvars
+from qdPy import w_Bsplines_pyro as w_Bsp
+from qdPy import qdclasses_pyro as qdcls
 ########################################################################
 # importing the global variables
 ARGS = FN.create_argparser()
@@ -29,18 +32,25 @@ def get_eig(mode_idx):
         V = onp.loadtxt(f'{GVAR.eigdir}/' +
                        f'V{mode_idx}.dat')[GVAR.rmin_idx:GVAR.rmax_idx]
     except FileNotFoundError:
-        LOGGER.info('Mode file not found for mode index = {}'\
-                    .format(mode_idx))
         return None
     # converting to device array
     U_jax, V_jax = np.asarray(U, DTYPE), np.asarray(V, DTYPE) 
     return U_jax, V_jax
 
+@jit
 def Omega(ell, N):
+    return np.sqrt(0.5 * (ell+N) * (ell-N+1))
+    # the if statement was causing an error for jax
+    # the jitted function takes 50microsec and 
+    # the non-jitted function takes 125microsec
+    '''
     if abs(N) > ell:
         return 0
     else:
         return np.sqrt(0.5 * (ell+N) * (ell-N+1))
+    '''
+
+
 
 # computing the T_s_r kernel for QDPT rotation
 def compute_Tsr(ix, iy, s_arr):
@@ -74,9 +84,71 @@ def compute_Tsr(ix, iy, s_arr):
                     Om1 * Om2 * wigval * eigfac / GVAR.r
     return Tsr
 
+# SBD: I dont think we need to @jit this function but other functions 
+# called from this.
+# {{{ def compute_res(params):                                                                                     
+def compute_res(params):
+    n = GVAR.n0
+    ells = np.arange(GVAR.args.lmin, GVAR.args.lmax+1)
+    res = 0.0
+    counter = 0
+
+    spline_dict = w_Bsp.wsr_Bspline(GVAR)
+    spline_dict.update_wsr_for_MCMC(params)
+
+    for ell in ells:
+        GVAR.args.l0 = ell
+        ritz_degree = min(GVAR.args.l0//2+1, 36)
+        # GVAR = globalvars.globalVars(args=ARGS)
+        analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
+        super_matrix = analysis_modes.create_supermatrix()
+        supmat_qdpt = super_matrix.supmat
+        fqdpt = solve_eigprob(supmat_qdpt, analysis_modes.omega0)
+        # converting to nHz                                                                                        
+        fqdpt *= GVAR.OM * 1e9
+
+        acoeffs_qdpt = get_RL_coeffs(analysis_modes, GVAR, fqdpt, ritz_degree)
+
+        mask_nl = (GVAR.hmidata[:, 0] == ARGS.l0)*(GVAR.hmidata[:, 1] == ARGS.n0)
+        splitdata = GVAR.hmidata[mask_nl, 12:12+ritz_degree].flatten()
+        sigdata = GVAR.hmidata[mask_nl, 48:48+ritz_degree].flatten()
+
+        res += np.sum(((acoeffs_qdpt[1:] - splitdata)**2)/(sigdata**2))
+        counter += len(splitdata)
+
+    print(f"==========RES = {res} =================")
+    print(f"==========params = {params} =================")
+    print(f'Memory used = {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 3} GB')
+    T2 = time.time()
+    print(f"Ttal time taken = {(T2-T1)/60:7.3f} minutes")
+    return res/counter
+
+    return None
+
+# {{{ def solve_eigprob(super_matrix):                                                                             
+@jit
+def solve_eigprob(supmat_qdpt, analysis_modes_omega0):
+    supmat_dpt = np.diag(np.diag(supmat_qdpt))
+    eigvals_dpt_unsorted = qdcls.get_eigvals_DPT(supmat_dpt)
+    eigvals_qdpt_unsorted, eigvecs_qdpt = qdcls.get_eigvals_QDPT(supmat_qdpt)
+
+    #eigvals_l0_qdpt, eigvecs_qdpt = get_l0_freqs_qdpt(analysis_modes,
+    #                                                  eigvals_qdpt_unsorted,
+    #                                                  eigvecs_qdpt)
+
+    #fqdpt = (analysis_modes_omega0 + eigvals_l0_qdpt/2/analysis_modes_omega0)
+    #return fqdpt
+    return np.mean(eigvals_qdpt_unsorted)
+# }}} def solve_eigprob(super_matrix)  
+
 ########################################################################
 # testing the jax functions
+# get_eig
 U,V = get_eig(1000)
+
+# comptue_res (this is the pivotal function)
+param_true = onp.loadtxt(f'{GVAR.datadir}/params_init_098.txt')
+compute_res(param_true)
 
 sys.exit()
 ########################################################################
