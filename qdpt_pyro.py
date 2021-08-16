@@ -94,6 +94,7 @@ def compute_res(params):
     counter = 0
 
     spline_dict = w_Bsp.wsr_Bspline(GVAR)
+    # return spline_dict
     spline_dict.update_wsr_for_MCMC(params)
 
     for ell in ells:
@@ -147,8 +148,8 @@ def solve_eigprob(supmat_qdpt, analysis_modes_omega0):
 U,V = get_eig(1000)
 
 # comptue_res (this is the pivotal function)
-param_true = onp.loadtxt(f'{GVAR.datadir}/params_init_098.txt')
-compute_res(param_true)
+param_true = np.asarray(onp.loadtxt(f'{GVAR.datadir}/params_init_098.txt'))
+spline_dict = compute_res(param_true)
 
 sys.exit()
 ########################################################################
