@@ -48,6 +48,7 @@ class wsr_Bspline:
 
         # getting coefficients for the r_spline part
         self.get_spline_coeffs(self.wsr_dpt[:, self.rth_ind:])       
+        print(self.c1.shape, self.c3.shape, self.c5.shape)
         self.knot_mask = np.zeros_like(self.t, dtype=np.bool_)
         self.knot_mask = index_update(self.knot_mask, index[-self.knot_update_num-self.k-1:-self.k-1], True)
 
@@ -72,10 +73,10 @@ class wsr_Bspline:
 
         # looping over all the s in wsr
         for i in range(len(self.wsr_dpt)):
-            self.wsr_upex_matched[i, :] = self.create_nearsurface_profile(i,
-                                                                          which_ex='upex')
-            self.wsr_loex_matched[i, :] = self.create_nearsurface_profile(i,
-                                                                          which_ex='loex')
+            wsr_upex_matched = self.create_nearsurface_profile(i, which_ex='upex')
+            self.wsr_upex_matched = index_update(self.wsr_upex_matched, index[i,:], wsr_upex_matched)
+            wsr_loex_matched = self.create_nearsurface_profile(i, which_ex='loex')
+            self.wsr_loex_matched = index_update(self.wsr_loex_matched, index[i,:], wsr_loex_matched)
 
         # generating and saving coefficients for the upper extreme profiles
         c1, c3, c5 = self.get_spline_coeffs(self.wsr_upex_matched[:, self.rth_ind:],
@@ -87,7 +88,7 @@ class wsr_Bspline:
         params_init.append(c5[self.knot_mask])
 
         params_init = np.array(params_init).flatten()
-        np.savetxt(f"{self.datadir}/params_init_upex_{fsuffix}", params_init)
+        onp.savetxt(f"{self.datadir}/params_init_upex_{fsuffix}", params_init)
 
         # generating and saving coefficients for the lower extreme profiles
         c1, c3, c5 = self.get_spline_coeffs(self.wsr_loex_matched[:, self.rth_ind:],
@@ -99,7 +100,7 @@ class wsr_Bspline:
         params_init.append(c5[self.knot_mask])
 
         params_init = np.array(params_init).flatten()
-        np.savetxt(f"{self.datadir}/params_init_loex_{fsuffix}", params_init)
+        onp.savetxt(f"{self.datadir}/params_init_loex_{fsuffix}", params_init)
         
 
     def get_spline_coeffs(self, wsr, return_coeffs=False):
@@ -110,12 +111,13 @@ class wsr_Bspline:
         __, c5, __ = interpolate.splrep(self.r_spline, w5, s=0, k=self.k, t=self.knot_locs)
 
         # gets used during initializing extremal profiles
-        if return_coeffs: return c1, c3, c5
+        if return_coeffs: return np.asarray(c1), np.asarray(c3), np.asarray(c5)
 
         # gets used during MCMC
         else: 
             self.t = t
-            self.c1, self.c3, self.c5 = c1, c3, c5
+            # convering them to DeviceArrays before retutning
+            self.c1, self.c3, self.c5 = np.asarray(c1), np.asarray(c3), np.asarray(c5)
 
     def get_wsr_from_Bspline(self):
         # the non-fitting part
@@ -140,9 +142,9 @@ class wsr_Bspline:
         ndim = len(params)
         assert ndim == self.knot_update_num*3, "Parameter size mismatch"
         slice1, slice2 = ndim//3, 2*ndim//3
-        self.c1[self.knot_mask] = params[:slice1]
-        self.c3[self.knot_mask] = params[slice1:slice2]
-        self.c5[self.knot_mask] = params[slice2:]
+        self.c1 = index_update(self.c1, index[self.knot_mask], params[:slice1])
+        self.c3 = index_update(self.c3, index[self.knot_mask], params[slice1:slice2])
+        self.c5 = index_update(self.c5, index[self.knot_mask], params[slice2:])
         self.get_wsr_from_Bspline()
 
 

@@ -5,7 +5,7 @@ quasi-degenerate perturbation theory.
 Taken an input toroidal velocity profile in terms of $w_s(r)$
 and computes the new eigenfrequencies using both 
 degenerate perturbation theory (DPT) and quasi-degenrate
-perturbation theory (QDPT).
+perturbation theory (QDPT)
 
 # Inversions
 -- yet to be implemented 
