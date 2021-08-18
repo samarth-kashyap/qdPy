@@ -1,4 +1,4 @@
-"""Computes the eigenfrequencies using QDPT and DPT"""
+B"""Computes the eigenfrequencies using QDPT and DPT"""
 import logging
 import time
 import numpy as np
@@ -16,7 +16,7 @@ DIRNAME_NEW = "w135_antia"
 
 T1 = time.time()
 
-GVAR = globalvars.globalVars(ARGS)
+GVAR = globalvars.globalVars(args=ARGS)
 # }}} global variables
 
 # creates new dir if it does not exist

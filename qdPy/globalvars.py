@@ -101,6 +101,7 @@ class globalVars():
 
         # rth = r threshold beyond which the profiles are updated. 
         self.rth = rth
+        
         self.fac_up = np.array([1.1, 2.0, 2.0])
         self.fac_lo = np.array([0.9, 0.0, 0.0])
 

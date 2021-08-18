@@ -12,7 +12,7 @@ class wsr_Bspline:
         self.gvar = gvar
 
         # the threshold radius beyond which spline is to be fitted
-        self.rth = gvar.rth
+        self.rth = self.gvar.rth
         # finding the index of radius below which the profile does not change 
         # this is essentially where the matching function goes to zero
         self.rth_ind = np.argmin(np.abs(self.get_matching_function() - 1e-3))
