@@ -5,6 +5,15 @@ import numpy as np
 WFNAME = 'w_s/w.dat'
 
 class wsr_Bspline:
+    """Computing velocity profiles (w_s(r)) using B-splines"""
+
+    __all__ = ["store_params_init",
+               "get_spline_coeffs",
+               "get_wsr_from_Bspline",
+               "get_matching_function",
+               "update_wsr_for_MCMC",
+               "create_nearsurface_profile"]
+
     def __init__(self, gvar, k=3, knot_num=5, initialize=False):
         self.knot_num = knot_num
         self.k = k
@@ -12,7 +21,7 @@ class wsr_Bspline:
         self.gvar = gvar
 
         # the threshold radius beyond which spline is to be fitted
-        self.rth = gvar.rth
+        self.rth = self.gvar.rth
         # finding the index of radius below which the profile does not change 
         # this is essentially where the matching function goes to zero
         self.rth_ind = np.argmin(np.abs(self.get_matching_function() - 1e-3))

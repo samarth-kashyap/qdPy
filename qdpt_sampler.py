@@ -17,6 +17,7 @@ import emcee
 import pickle as pkl
 import os, psutil, sys; 
 
+print('Here')
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
 ARGS = FN.create_argparser()
@@ -38,9 +39,11 @@ if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
 def init_mcdict():
     if ARGS.usempi:
         spline_dict = w_Bsp.wsr_Bspline(GVAR) #, initialize=True)
+        print('Yes MPI')
     else:
         spline_dict = w_Bsp.wsr_Bspline(GVAR, initialize=True)
-        # sys.exit()  # creating the upex and loex once before MPI run
+        print('No MPI')
+        sys.exit()  # creating the upex and loex once before MPI run
 
     mcdict['spline'] = spline_dict
     mcdict['counter'] = 0
@@ -329,15 +332,8 @@ def solve_eigprob(analysis_modes):
 
 
 if __name__ == "__main__":
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    dict_exists = False
-    if rank == 0:
-        mcdict = init_mcdict()
-        dict_exists = True
-    else:
-        mcdict = None
-    mcdict = comm.bcast(mcdict, root=0)
+    print('Here')
+    mcdict = init_mcdict()
     start_mcmc()
 
     # spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]

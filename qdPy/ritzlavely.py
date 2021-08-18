@@ -9,6 +9,15 @@ NAX = np.newaxis
 LOGGER = FN.create_logger(__name__, 'logs/qdpt.log', logging.INFO)
 
 class ritzLavelyPoly():
+    """Computes the Ritzwoller-Lavely polynomials for a given 
+    ell and jmax.
+    """
+
+    __all__ = ["get_Pjl",
+               "normalize_Pjl",
+               "get_coeffs",
+               "polyval"]
+
     def __init__(self, ell, jmax):
         assert ell > 0, "Ritzwoller-Lavely polynomials don't exist for ell=0"
         assert jmax + 1 <= 2*ell, "Max degree (jmax) should be smaller than 2*ell"

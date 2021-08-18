@@ -84,6 +84,7 @@ class qdptMode:
         self.spline_dict = spline_dict
 
     def nl_idx(self, n0, l0):
+        print(n0,l0)
         try:
             idx = self.gvar.nl_all_list.index([n0, l0])
         except ValueError:

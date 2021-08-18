@@ -20,6 +20,7 @@ LOGGER.info(f"Using velocity profile - {WFNAME}")
 
 
 def w3j(l1, l2, l3, m1, m2, m3):
+    """Computes the wigner-3j symbol for given l1, l2, l3, m1, m2, m3"""
     l1 = int(2*l1)
     l2 = int(2*l2)
     l3 = int(2*l3)
@@ -34,6 +35,17 @@ def w3j(l1, l2, l3, m1, m2, m3):
 
 
 def w3j_vecm(l1, l2, l3, m1, m2, m3):
+    """Computes the wigner-3j symbol for given l1, l2, l3, m1, m2, m3.
+
+    Inputs:
+    -------
+    l1, l2, l3 - int
+    m1, m2, m3 - np.ndarray(ndim=1, dtype=np.int32)
+
+    Returns:
+    --------
+    wigvals - np.ndarray(ndim=1, dtype=np.float32)
+    """
     l1 = int(2*l1)
     l2 = int(2*l2)
     l3 = int(2*l3)
@@ -45,6 +57,7 @@ def w3j_vecm(l1, l2, l3, m1, m2, m3):
 
 
 def Omega(ell, N):
+    """Computes Omega_N^\ell"""
     if abs(N) > ell:
         return 0
     else:
@@ -52,6 +65,7 @@ def Omega(ell, N):
 
 
 def minus1pow(num):
+    """Computes (-1)^n"""
     if num%2 == 1:
         return -1.0
     else:
@@ -59,6 +73,7 @@ def minus1pow(num):
 
 
 def minus1pow_vec(num):
+    """Computes (-1)^n"""
     modval = num % 2
     retval = np.zeros_like(modval)
     retval[modval == 1] = -1.0
@@ -67,24 +82,55 @@ def minus1pow_vec(num):
 
 
 def gamma(ell):
+    """Computes gamma_ell"""
     return np.sqrt((2*ell + 1)/4/np.pi)
 
 
 class qdptMode:
+    """Class that handles modes that are perturbed using QDPT. Each class instance
+    corresponds to a central mode (l0, n0). The frequency space is scanned to find out 
+    all the neighbouring modes (l, n) which interact with the central mode 
+    (and amongnst themselves). The supermatrix is constructed for all possible 
+    coupling combinations (l, n) <--> (l', n').
+    """
+    __all__ = ["nl_idx", "nl_idx_vec",
+               "get_omega_neighbors",
+               "get_mode_neighbors_params",
+               "create_supermatrix",
+               "update_supermatrix"]
+
     def __init__(self, gvar, spline_dict):
+        # global variables are read from the main program
         self.gvar = gvar
+
+        # spline-dictionary is preloaded
         self.spline_dict = spline_dict
         self.n0 = gvar.n0
         self.l0 = gvar.l0
         self.smax = gvar.smax
         self.freq_window = gvar.fwindow
 
+        # index (mode-catalog) corresponding to the central mode
         self.idx = self.nl_idx(self.n0, self.l0)
         self.omega0 = self.gvar.omega_list[self.idx]
         self.get_mode_neighbors_params()
         self.spline_dict = spline_dict
 
     def nl_idx(self, n0, l0):
+        """Returns the index (mode-catalog) for the given mode.
+
+        Inputs:
+        -------
+        n0 - int
+            radial order of the mode
+        l0 - int
+            spherical harmonice degree of the mode
+
+        Returns:
+        --------
+        idx - int
+            mode-catalog index
+        """
         try:
             idx = self.gvar.nl_all_list.index([n0, l0])
         except ValueError:
@@ -93,6 +139,22 @@ class qdptMode:
         return idx
 
     def nl_idx_vec(self, nl_list):
+        """Returns the index (mode-catalog) for the given mode.
+        (vector version)
+
+        Inputs:
+        -------
+        nl_list - list 
+            list containing (n, l) pairs
+            for catalog index idx,
+            - nl_list[idx][0] - radial order
+            - nl_list[idx][1] - spherical harmonic degree
+
+        Returns:
+        --------
+        nlidx - np.ndarray(ndim=1, dtype=np.int)
+            array containing mode-catalog indices
+        """
         nlnum = nl_list.shape[0]
         nlidx = np.zeros(nlnum, dtype=np.int)
         for i in range(nlnum):
@@ -101,6 +163,18 @@ class qdptMode:
         return nlidx
 
     def get_omega_neighbors(self, nl_idx):
+        """Returns the frequencies of modes.
+
+        Inputs:
+        -------
+        nl_idx - list
+            mode-catalog indices of modes
+
+        Returns:
+        --------
+        omega_neighbors - np.ndarray(ndim=1, dtype=np.float64)
+            frequencies corresponding to the modes
+        """
         nlnum = len(nl_idx)
         omega_neighbors = np.zeros(nlnum)
         for i in range(nlnum):
@@ -108,6 +182,24 @@ class qdptMode:
         return omega_neighbors
 
     def get_mode_neighbors_params(self):
+        """Gets the parameters corresponding to mode-neighbours.
+
+        Inputs:
+        -------
+        None
+
+        Returns:
+        --------
+        None
+
+        Notes:
+        ------
+        Updates the following class attributes:
+        nl_neighbors - list containing (n, l) of neighbouring modes
+        nl_neighbors_idx - catalog indices of these neighbours
+        omega_neighbors - frequencies of these neighbors
+        num_neighbors - total number of neighbours
+        """
         omega_list = self.gvar.omega_list
         omega0 = self.omega0
         nl_all = self.gvar.nl_all
@@ -127,6 +219,9 @@ class qdptMode:
                     .format(self.num_neighbors, self.n0, self.l0))
 
     def create_supermatrix(self):
+        """Creates the supermatrix with all possible (l, n) <--> (l', n')
+        couplings. Each (l, n) <--> (l', n') coupling is given by the submatrix
+        """
         t1 = time.time()
         supmat = superMatrix(self.gvar, self.spline_dict, self.num_neighbors,
                              self.nl_neighbors, self.nl_neighbors_idx,
@@ -138,6 +233,7 @@ class qdptMode:
         return supmat
 
     def update_supermatrix(self):
+        """Updates the supermatrix"""
         t1 = time.time()
         self.super_matrix.fill_supermatrix()
         self.super_matrix.fill_supermatrix_freqdiag()
@@ -146,7 +242,15 @@ class qdptMode:
 
 
 class superMatrix():
-    def __init__(self, gvar, spline_dict, dim, nl_neighbors, nl_neighbors_idx, omegaref,
+
+    __all__ = ["load_eigs",
+               "get_precomputed_Cvec",
+               "fill_supermatrix",
+               "fill_supermatrix_freqdiag",
+               "get_eigvals"]
+
+    def __init__(self, gvar, spline_dict, dim,
+                 nl_neighbors, nl_neighbors_idx, omegaref,
                  omega_neighbors):
         self.gvar = gvar
         self.spline_dict = spline_dict
@@ -155,6 +259,10 @@ class superMatrix():
         self.dim_blocks = dim
         self.nl_neighbors = nl_neighbors
         self.nl_neighbors_idx = nl_neighbors_idx
+
+        # supermatix can be tiled with submatrices corresponding to
+        # (l, n) - (l', n') coupling. The dimensions of the submatrix
+        # is (2l+1, 2l'+1)
         self.dimX_submat = 2*nl_neighbors[:, 1].reshape(1, dim) * np.ones((dim, 1)) + 1
         self.dimY_submat = 2*nl_neighbors[:, 1].reshape(dim, 1) * np.ones((1, dim)) + 1
         self.dim_super = int(self.dimX_submat[0, :].sum())
@@ -169,6 +277,8 @@ class superMatrix():
             larr = self.nl_neighbors[:, 1]
             self.Cvec_pc = self.get_precomputed_Cvec(narr, larr)
 
+        # loading eigenfunctions. The elements of the supermatrix
+        # are integrals involving the eigenfunctions.
         self.eigU, self.eigV = self.load_eigs()
 
         self.fill_supermatrix()
@@ -177,6 +287,9 @@ class superMatrix():
         return None
 
     def load_eigs(self):
+        """Loads the eigenfunctions U, V for the nl_neighbors
+        corresponding to the qdptMode object.
+        """
         eigU = {}
         eigV = {}
         for im, mode_idx in enumerate(self.nl_neighbors_idx):
@@ -198,6 +311,7 @@ class superMatrix():
 
 
     def get_precomputed_Cvec(self, narr, larr):
+        """Precomputing some elements of the supermatrix for speeding up computation"""
         Cvec_pc = {}
         for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
@@ -209,6 +323,7 @@ class superMatrix():
         return Cvec_pc
 
     def fill_supermatrix(self):
+        """Filling the supermatrix"""
         LOGGER.info("Creating submatrices for: ")
         # for i in tqdm(range(self.dim_blocks), desc=f'[Rank: {MPI.COMM_WORLD.Get_rank()}] Submatrices for l0={self.gvar.l0}'):
         print(f"[Rank: {MPI.COMM_WORLD.Get_rank()}] Creating submatrices: ")
@@ -225,6 +340,7 @@ class superMatrix():
                                                                  abs(submat).max()))
 
     def fill_supermatrix_freqdiag(self):
+        """Adding the correction factor to the QDPT supermatrix"""
         for i in range(self.dim_blocks):
             sm = subMatrix(i, i, self)
             om2diff = self.omega_neighbors[i]**2 - self.omegaref**2
@@ -234,6 +350,7 @@ class superMatrix():
 
 
     def get_eigvals(self, type='DPT', sorted=False):
+        """Solve for the eigenvalues of the supermatrix"""
         eigvals_list = []
         if type == 'DPT':
             eigvals_all = np.diag(self.supmat_dpt)
@@ -258,6 +375,11 @@ class superMatrix():
 
 
 class subMatrix():
+
+    __all__ = ["get_submat",
+               "get_Cvec",
+               "compute_Tsr",
+               "get_eig"]
     def __init__(self, ix, iy, sup, printinfo=False):
         LOGGER.info("--- (n1, l1) = ({}, {}) and (n2, l2) = ({}, {})"\
                     .format(sup.nl_neighbors[ix, 0], sup.nl_neighbors[ix, 1],
@@ -278,6 +400,9 @@ class subMatrix():
 
 
     def get_submat(self, s_arr=np.array([1, 3, 5])):
+        """Fill the submatrix. For the chosen perturbation, the
+        submatrix is a diagonal matrix.
+        """
         Cvec = self.get_Cvec(s_arr)
         if self.sup.gvar.args.use_precomputed:
             arg_str = f"{self.n1}.{self.ell1}-{self.n2}.{self.ell2}"
@@ -302,6 +427,7 @@ class subMatrix():
 
 
     def get_Cvec(self, s_arr):
+        """Computing the non-zero components of the submatrix"""
         ell = min(self.ell1, self.ell2)
         m = np.arange(-ell, ell+1)
 
@@ -336,6 +462,9 @@ class subMatrix():
 
 
     def compute_Tsr(self, s_arr):
+        """Computing the kernels which are used for obtaining the 
+        submatrix elements.
+        """
         Tsr = np.zeros((len(s_arr), len(self.sup.gvar.r)))
         if self.sup.gvar.args.use_precomputed:
             enn1 = self.sup.nl_neighbors[self.ix, 0]
@@ -370,6 +499,7 @@ class subMatrix():
 
 
     def get_eig(self, mode_idx):
+        """Read eigenfunctions from file"""
         LOGGER.debug('Getting eigenfunctions for mode_idx = {}: nl = {}'\
                      .format(mode_idx, self.sup.gvar.nl_all[mode_idx]))
         try:
