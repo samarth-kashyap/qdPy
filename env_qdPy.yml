@@ -1,0 +1,19 @@
+name: env-qdPy
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.7
+  - numpy
+  - scipy
+  - ipython
+  - matplotlib
+  - astropy
+  - sympy
+  - emcee
+  - schwimmbad
+  - tqdm
+  - wigner
+  - pip:
+    - py3nj
+    - psutil
