@@ -1,4 +1,4 @@
-B"""Computes the eigenfrequencies using QDPT and DPT"""
+"""Computes the eigenfrequencies using QDPT and DPT"""
 import logging
 import time
 import numpy as np
