@@ -1,4 +1,4 @@
-name: qdpt-env
+name: env-inst-check
 channels:
   - conda-forge
   - defaults
@@ -11,6 +11,5 @@ dependencies:
   - matplotlib
   - emcee
   - pip:
-    - mpi4py
     - py3nj
     - psutil

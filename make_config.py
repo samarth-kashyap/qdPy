@@ -87,5 +87,5 @@ if __name__ == "__main__":
         f.write(f"{scratch_dir}{NL}")
         f.write(f"{snrnmais_dir}")
 
-    # create_makefile()
-    # os.system("make")
+    create_makefile()
+    os.system("make")
