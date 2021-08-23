@@ -12,6 +12,7 @@ dependencies:
   - sympy
   - emcee
   - schwimmbad
+  - pip
   - tqdm
   - wigner
   - pip:
