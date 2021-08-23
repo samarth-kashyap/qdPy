@@ -1,15 +1,6 @@
 qdPy is a package to compute helioseismic eigenfrequencies using
 quasi-degenerate perturbation theory. 
 
-# Forward model
-Taken an input toroidal velocity profile in terms of $w_s(r)$
-and computes the new eigenfrequencies using both 
-degenerate perturbation theory (DPT) and quasi-degenrate
-perturbation theory (QDPT)
-
-# Inversions
--- yet to be implemented 
-
 ## How to use the package
 
 Open the terminal and go to your local directory where you want to clone the repository and use ```git clone``` as follows
@@ -34,3 +25,13 @@ output files will be stored. The default would be the package directory itself. 
 then run the solar eigenfunction downloader. By default these will be installed in the 
 directory that contains the package i.e. if package directory is given by ```/path/to/dir/qdPy```,
 the eigenfunctions will be installed in ```/path/to/dir/get-solar-eigs``` by default.
+
+* Enter '0' when prompted during installation to choose: 0 - Jesper or 1 - Antia.
+* Enter 'n' when asked if IDL access is available or not.
+
+## Run the code
+
+To run the driver script ```qdpt.py``` at the most basic level, run the following
+```
+python qdpt.py --n0 0 --l0 200
+```
