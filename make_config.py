@@ -77,8 +77,7 @@ if __name__ == "__main__":
     solareigs_dir = input(f"Enter location of the SNRNMAIS files:" +
                     f"Default: {os.path.dirname(package_dir)} -- ") or \
                     f"{os.path.dirname(package_dir)}"
-    os.system('cd {solareigs_dir}')
-    os.system('git clone https://github.com/srijaniiserprinceton/get-solar-eigs.git')
+    os.system(f'cd {solareigs_dir}; git clone https://github.com/srijaniiserprinceton/get-solar-eigs.git')
     os.system(f'python {solareigs_dir}/get-solar-eigs/make_config.py')
     snrnmais_dir = f"{solareigs_dir}/get-solar-eigs/efs_Jesper/snrnmais_files"
 
