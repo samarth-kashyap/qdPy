@@ -80,6 +80,7 @@ if __name__ == "__main__":
     os.system(f'cd {solareigs_dir}; git clone https://github.com/srijaniiserprinceton/get-solar-eigs.git')
     os.system(f'python {solareigs_dir}/get-solar-eigs/make_config.py')
     snrnmais_dir = f"{solareigs_dir}/get-solar-eigs/efs_Jesper/snrnmais_files"
+    os.system(f'cp {solareigs_dir}/get-solar-eigs/efs_Jesper/data/HMI/* {snrnmais_dir}/data_files/.')
 
     # creating miscellaneous directories
     create_dir(f"{package_dir}/logs")
