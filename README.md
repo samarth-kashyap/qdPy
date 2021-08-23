@@ -26,6 +26,9 @@ conda env create -f env_qdPy.yml
 conda activate env_qdPy 
 ```
 Run the configure script to download eigenfunctions and setup the directory structure.
+```
+python make_config.py
+```
 You'll first be prompted to enter the location of the ```scratch``` directory (This is where all
 output files will be stored. The default would be the package directory itself. The script will
 then run the solar eigenfunction downloader. By default these will be installed in the 
