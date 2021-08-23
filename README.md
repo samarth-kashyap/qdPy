@@ -3,9 +3,9 @@ quasi-degenerate perturbation theory.
 
 ## How to use the package
 
-Open the terminal and go to your local directory where you want to clone the repository and use ```git clone``` as follows
+Open the terminal and go to your local directory where you want to clone the repository and use ```git clone``` as follows to clone the branch ```qdpy_easy```
 ```
-git clone https://github.com/samarth-kashypa/qdPy.git
+git clone --single-branch --branch qdpy_easy https://github.com/samarth-kashyap/qdPy.git
 ```
 Enter the directory ```qdPy```
 ```
