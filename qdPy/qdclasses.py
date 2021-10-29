@@ -2,7 +2,7 @@
 import logging
 import numpy as np
 import py3nj
-from scipy.integrate import simps
+from scipy.integrate import trapz as simps
 import scipy as sp
 import qdPy.functions as FN
 from tqdm import tqdm

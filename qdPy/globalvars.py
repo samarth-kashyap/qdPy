@@ -26,7 +26,7 @@ class qdParams():
     # (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
     # (Since we are using lmax = 300, 0.45*300 \approx 150)
     rmin = 0.0
-    rmax = 1.0
+    rmax = 1.2
     smax = 5
     fwindow =  150 
     args = FN.create_argparser()
@@ -83,6 +83,8 @@ class globalVars():
         else:
             self.rmin = rmin
             self.rmax = rmax
+
+        print(f"rmax = {self.rmax}")
 
         self.rmin_idx = self.get_idx(self.r, self.rmin)
 
