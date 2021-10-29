@@ -31,3 +31,4 @@ output files will be stored. The default would be the package directory itself. 
 then run the solar eigenfunction downloader. By default these will be installed in the 
 directory that contains the package i.e. if package directory is given by ```/path/to/dir/qdPy```,
 the eigenfunctions will be installed in ```/path/to/dir/get-solar-eigs``` by default.
+

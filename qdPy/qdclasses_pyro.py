@@ -1,6 +1,8 @@
 """Class to handle QDPT computation"""
 import logging
 import numpy as np
+import jax.numpy as jnp
+from jax import jit, partial
 import py3nj
 from scipy.integrate import simps
 import scipy as sp
@@ -43,30 +45,24 @@ def w3j_vecm(l1, l2, l3, m1, m2, m3):
     return wigvals
 
 
+@jit
 def Omega(ell, N):
-    if abs(N) > ell:
-        return 0
-    else:
-        return np.sqrt(0.5 * (ell+N) * (ell-N+1))
+    return jnp.where(abs(N) > ell, 0, jnp.sqrt(0.5 * (ell+N) * (ell-N+1)))
 
 
+@jit
 def minus1pow(num):
-    if num%2 == 1:
-        return -1.0
-    else:
-        return 1.0
+    return jnp.where(num % 2, -1.0, 1.0)
 
 
+@jit
 def minus1pow_vec(num):
-    modval = num % 2
-    retval = np.zeros_like(modval)
-    retval[modval == 1] = -1.0
-    retval[modval == 0] = 1.0
-    return retval
+    return jnp.where(num % 2, -1.0, 1.0)
 
 
+@jit
 def gamma(ell):
-    return np.sqrt((2*ell + 1)/4/np.pi)
+    return jnp.sqrt((2*ell + 1)/4/np.pi)
 
 
 class qdptMode:
@@ -107,6 +103,7 @@ class qdptMode:
             omega_neighbors[i] = self.gvar.omega_list[nl_idx[i]]
         return omega_neighbors
 
+    # @partial(jit, static_argnums=(0,))
     def get_mode_neighbors_params(self):
         omega_list = self.gvar.omega_list
         omega0 = self.omega0
@@ -380,7 +377,6 @@ class subMatrix():
                         .format(mode_idx))
             return None
         return U, V
-
 
 
 def get_eigvals_DPT(supmat):
