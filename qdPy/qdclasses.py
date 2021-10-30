@@ -331,6 +331,7 @@ class superMatrix():
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
                 submat = sm.get_submat()
+                print(sm.startx, sm.starty, sm.endx, sm.endy)
                 self.supmat[sm.startx:sm.endx,
                             sm.starty:sm.endy] = submat
                 self.supmat[sm.starty:sm.endy,
