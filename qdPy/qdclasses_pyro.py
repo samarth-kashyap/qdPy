@@ -252,6 +252,62 @@ class superMatrix():
         #     eigvals_list.append(eigvals_all[sm.startx:sm.endx])
         # return eigvals_list
 
+
+# creating jax functions for submatrix
+# what all does a submatrix need?
+
+@jit
+def create_submatrix(nl1, nl2, nlidxs, rws, omegaref, use_precomputed=False, eig_dict):
+    enn1, ell1 = nl1
+    enn2, ell2 = nl2
+    idx1, idx2 = nlidxs
+    r, wsr = rws
+
+    eigU = eig_dict['eigU']
+    eigV = eig_dict['eigV']
+    s_arr = np.array([1, 3, 5])
+    ell = min(ell1, ell2)
+    m = np.arange(-ell, ell+1)
+
+    wigvals = np.zeros((2*ell+1, len(s_arr)))
+    for i in range(len(s_arr)):
+        wigvals[:, i] = w3j_vecm(ell1, s_arr[i], ell2, -m, 0*m, m)
+
+    Tsr = np.zeros((len(s_arr), len(self.sup.gvar.r)))
+    if use_precomputed:
+        arg_str1 = f"{enn1}.{ell1}"
+        arg_str2 = f"{enn2}.{ell2}"
+        U1 = eigU[arg_str1]
+        U2 = eigU[arg_str2]
+        V1 = eigV[arg_str1]
+        V2 = eigV[arg_str2]
+    else:
+        U1, V1 = get_eig(idx1)
+        U2, V2 = get_eig(idx2)
+    L1sq = ell1*(ell1+1)
+    L2sq = ell2*(ell2+1)
+    Om1 = Omega(ell1, 0)
+    Om2 = Omega(ell2, 0)
+
+    for i in range(len(s_arr)):
+        s = s_arr[i]
+        ls2fac = L1sq + L2sq - s*(s+1)
+        eigfac = U2*V1 + V2*U1 - U1*U2 - 0.5*V1*V2*ls2fac
+        wigval = w3j(ell1, s, ell2, -1, 0, 1)
+        Tsr[i, :] = -(1 - minus1pow(ell1 + ell2 + s)) * \
+            Om1 * Om2 * wigval * eigfac / r
+        LOGGER.debug(" -- s = {}, eigmax = {}, wigval = {}, Tsrmax = {}"\
+                        .format(s, abs(eigfac).max(), wigval, abs(Tsr[i, :]).max()))
+
+    # -1 factor from definition of toroidal field
+    integrand = Tsr * wsr   # since U and V are scaled by sqrt(rho) * r
+    integral = simps(integrand, axis=1, x=r)
+    prod_gammas = gamma(ell1) * gamma(ell2) * gamma(s_arr)
+    omegaref = omegaref
+    Cvec = minus1pow_vec(m) * 8*np.pi * omegaref * (wigvals @ (prod_gammas * integral))
+
+
+
 class subMatrix():
     def __init__(self, ix, iy, sup, printinfo=False):
         LOGGER.info("--- (n1, l1) = ({}, {}) and (n2, l2) = ({}, {})"\
