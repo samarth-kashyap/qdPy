@@ -331,7 +331,7 @@ class superMatrix():
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
                 submat = sm.get_submat()
-                print(sm.startx, sm.starty, sm.endx, sm.endy)
+                
                 self.supmat[sm.startx:sm.endx,
                             sm.starty:sm.endy] = submat
                 self.supmat[sm.starty:sm.endy,
@@ -345,6 +345,7 @@ class superMatrix():
         for i in range(self.dim_blocks):
             sm = subMatrix(i, i, self)
             om2diff = self.omega_neighbors[i]**2 - self.omegaref**2
+            print(self.nl_neighbors[i,1], om2diff)
             om2diff *= np.identity(sm.endx-sm.startx)
             self.supmat[sm.startx:sm.endx,
                         sm.starty:sm.endy] += om2diff
