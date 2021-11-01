@@ -25,10 +25,12 @@ class qdParams():
     # (1) the correct normalization
     # (2) a1 = \omega_0 ( 1 - 1/ell ) scaling
     # (Since we are using lmax = 300, 0.45*300 \approx 150)
+
+    # defining the datatypes                                                                                                                                                             
     rmin = 0.0
     rmax = 1.2
     smax = 5
-    fwindow =  150 
+    fwindow = 150 
     args = FN.create_argparser()
     args.n0 = 0
     args.l0 = 150
@@ -38,7 +40,7 @@ class qdParams():
 
 class globalVars():
     qdPars = qdParams()
-    def __init__(self, rth=0.98, args=qdParams.args, rmin=qdPars.rmin,
+    def __init__(self, rth=0.98, args=qdPars.args, rmin=qdPars.rmin,
                  rmax=qdPars.rmax, smax=qdPars.smax, fwindow=qdPars.fwindow):
         # self.datadir = "/scratch/g.samarth/qdPy"
         # self.progdir = "/home/g.samarth/qdPy"
@@ -68,10 +70,10 @@ class globalVars():
         # should be 2.096367060263202423e-05 for above numbers
 
         # self.rho = np.loadtxt(f"{self.datadir}/rho.dat")
-        self.r = np.loadtxt(f"{self.datadir}/r.dat")
+        self.r = np.loadtxt(f"{self.datadir}/r.dat").astype('float')
         self.nl_all = np.loadtxt(f"{self.datadir}/nl.dat").astype('int')
         self.nl_all_list = np.loadtxt(f"{self.datadir}/nl.dat").astype('int').tolist()
-        self.omega_list = np.loadtxt(f"{self.datadir}/muhz.dat") * 1e-6 / self.OM
+        self.omega_list = np.loadtxt(f"{self.datadir}/muhz.dat").astype('float') * 1e-6 / self.OM
 
         # getting indices for minimum and maximum r
         if args.precompute:
