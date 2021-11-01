@@ -377,7 +377,6 @@ class superMatrix():
 
 
 class subMatrix():
-
     __all__ = ["get_submat",
                "get_Cvec",
                "compute_Tsr",
@@ -410,6 +409,8 @@ class subMatrix():
             arg_str = f"{self.n1}.{self.ell1}-{self.n2}.{self.ell2}"
             Cvec += self.sup.Cvec_pc[arg_str]
         Cmat = np.diag(Cvec)
+        print(self.ell1, self.ell2)
+        print(Cvec[:10])
         submatrix = np.zeros((int(self.sup.dimX_submat[0, self.ix]),
                               int(self.sup.dimY_submat[self.iy, 0])))
         dell = self.ell1 - self.ell2
@@ -436,6 +437,8 @@ class subMatrix():
         wigvals = np.zeros((2*ell+1, len(s_arr)))
         for i in range(len(s_arr)):
             wigvals[:, i] = w3j_vecm(self.ell1, s_arr[i], self.ell2, -m, 0*m, m)
+            # print(s_arr[i], self.ell1, self.ell2)
+            # print(wigvals[-6:, i][::-1])
 
         Tsr = self.compute_Tsr(s_arr)
         # -1 factor from definition of toroidal field
