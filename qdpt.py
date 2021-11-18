@@ -153,6 +153,9 @@ if __name__ == "__main__":
     analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
     super_matrix = analysis_modes.create_supermatrix()
 
+    # saving the supermatrix to compare with pyro
+    np.save('supmat_qdpt.npy', super_matrix.supmat)
+    
     fdpt, fqdpt = solve_eigprob()
 
     # converting to muHz

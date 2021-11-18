@@ -88,12 +88,14 @@ class globalVars():
 
         print(f"rmax = {self.rmax}")
 
-        self.rmin_idx = self.get_idx(self.r, self.rmin)
+        self.rmin_idx = self.get_idx(self.r, self.rmin) + 1
 
         # removing the grid point corresponding to r=0
         # because Tsr has 1/r factor
+        '''
         if self.rmin == 0:
             self.rmin_idx += 1
+        '''
         self.rmax_idx = self.get_idx(self.r, self.rmax)
         # print(f"rmin index = {self.rmin_idx}; rmax index = {self.rmax_idx}")
 
