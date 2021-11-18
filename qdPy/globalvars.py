@@ -27,7 +27,7 @@ class qdParams():
     # (Since we are using lmax = 300, 0.45*300 \approx 150)
 
     # defining the datatypes                                                                                                                                                             
-    rmin = 0.0
+    rmin = 0.3
     rmax = 1.2
     smax = 5
     fwindow = 150 

@@ -441,11 +441,13 @@ class subMatrix():
             # print(wigvals[-6:, i][::-1])
 
         Tsr = self.compute_Tsr(s_arr)
+        np.save('Tsr.npy', Tsr)
+        np.save('r.npy', self.sup.gvar.r)
         # -1 factor from definition of toroidal field
-        '''wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
-            [:, self.rmin_idx:self.rmax_idx] * (-1.0)'''
+        wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
+            [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         # self.sup.spline_dict.get_wsr_from_Bspline()
-        wsr = self.sup.spline_dict.wsr
+        # wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0
         # wsr[1, :] *= 0.0 # setting w3 = 0
         # wsr[2, :] *= 0.0 # setting w5 = 0
