@@ -445,7 +445,7 @@ class subMatrix():
         np.save('r.npy', self.sup.gvar.r)
         # -1 factor from definition of toroidal field
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
-        #    [:, self.rmin_idx:self.rmax_idx] * (-1.0)
+        #     [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         wsr = np.load('wsr_pyro.npy')
         # self.sup.spline_dict.get_wsr_from_Bspline()
         # wsr = self.sup.spline_dict.wsr

@@ -154,7 +154,7 @@ if __name__ == "__main__":
     super_matrix = analysis_modes.create_supermatrix()
 
     # saving the supermatrix to compare with pyro
-    np.save('supmat_qdpt.npy', super_matrix.supmat)
+    np.save(f'supmat_qdpt_{ARGS.l0}.npy', super_matrix.supmat)
     
     fdpt, fqdpt = solve_eigprob()
 
