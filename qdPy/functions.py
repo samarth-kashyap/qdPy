@@ -80,6 +80,8 @@ def create_argparser():
     parser.add_argument("--l0", help="angular degree", type=int)
     parser.add_argument("--lmin", help="min angular degree", type=int)
     parser.add_argument("--lmax", help="max angular degree", type=int)
+    parser.add_argument("--smax", help="max s", type=int, default=5)
+    parser.add_argument("--fwindow", help="freq window", type=int, default=150)
     parser.add_argument("--maxiter", help="max MCMC iterations",
                         type=int)
     parser.add_argument("--precompute",

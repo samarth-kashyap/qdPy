@@ -108,6 +108,8 @@ class qdptMode:
         self.n0 = gvar.n0
         self.l0 = gvar.l0
         self.smax = gvar.smax
+        print(f"init qdptMode: smax = {self.smax}")
+        self.s_arr = np.arange(1, self.smax+2, 2)
         self.freq_window = gvar.fwindow
 
         # index (mode-catalog) corresponding to the central mode
@@ -225,7 +227,7 @@ class qdptMode:
         t1 = time.time()
         supmat = superMatrix(self.gvar, self.spline_dict, self.num_neighbors,
                              self.nl_neighbors, self.nl_neighbors_idx,
-                             self.omega0, self.omega_neighbors)
+                             self.omega0, self.omega_neighbors, self.smax)
         self.super_matrix = supmat
         t2 = time.time()
         LOGGER.info("Time taken to create supermatrix = {:7.2f} seconds".format((t2-t1)))
@@ -251,14 +253,18 @@ class superMatrix():
 
     def __init__(self, gvar, spline_dict, dim,
                  nl_neighbors, nl_neighbors_idx, omegaref,
-                 omega_neighbors):
+                 omega_neighbors, smax=5):
         self.gvar = gvar
         self.spline_dict = spline_dict
         self.omegaref = omegaref
         self.omega_neighbors = omega_neighbors
         self.dim_blocks = dim
         self.nl_neighbors = nl_neighbors
-        self.nl_neighbors_idx = nl_neighbors_idx
+        self.nl_neighbors_idx = nl_neighbors_idx\
+
+        self.smax = smax
+        print(f"init superMatrix: smax = {self.smax}")
+        self.s_arr = np.arange(1, self.smax+2, 2)
 
         # supermatix can be tiled with submatrices corresponding to
         # (l, n) - (l', n') coupling. The dimensions of the submatrix
@@ -330,7 +336,7 @@ class superMatrix():
         for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
-                submat = sm.get_submat()
+                submat = sm.get_submat(s_arr=self.s_arr)
                 
                 self.supmat[sm.startx:sm.endx,
                             sm.starty:sm.endy] = submat
@@ -387,6 +393,7 @@ class subMatrix():
                             sup.nl_neighbors[iy, 0], sup.nl_neighbors[iy, 1]))
         self.ix, self.iy = int(ix), int(iy)
         self.sup = sup
+        self.s_arr = sup.s_arr
         self.rmin_idx = self.sup.gvar.rmin_idx
         self.rmax_idx = self.sup.gvar.rmax_idx
         self.startx = int(sup.dimX_submat[0, :ix].sum())
@@ -404,13 +411,12 @@ class subMatrix():
         """Fill the submatrix. For the chosen perturbation, the
         submatrix is a diagonal matrix.
         """
+        print(f"s_arr = {self.s_arr}")
         Cvec = self.get_Cvec(s_arr)
         if self.sup.gvar.args.use_precomputed:
             arg_str = f"{self.n1}.{self.ell1}-{self.n2}.{self.ell2}"
             Cvec += self.sup.Cvec_pc[arg_str]
         Cmat = np.diag(Cvec)
-        print(self.ell1, self.ell2)
-        print(Cvec[:10])
         submatrix = np.zeros((int(self.sup.dimX_submat[0, self.ix]),
                               int(self.sup.dimY_submat[self.iy, 0])))
         dell = self.ell1 - self.ell2
@@ -446,7 +452,8 @@ class subMatrix():
         # -1 factor from definition of toroidal field
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
         #    [:, self.rmin_idx:self.rmax_idx] * (-1.0)
-        wsr = np.load('wsr_pyro.npy')
+        # wsr = np.load('wsr_pyro.npy')
+        wsr = np.loadtxt('wsr.dat')[:len(s_arr), 1:-1]
         # self.sup.spline_dict.get_wsr_from_Bspline()
         # wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0
@@ -467,6 +474,29 @@ class subMatrix():
             np.save(f"{self.sup.gvar.outdir}/submatrices/" +
                     f"pc.{self.n1}.{self.ell1}-{self.n2}.{self.ell2}.npy", Cvec)
         return Cvec
+
+
+    def get_kernel(self, s_arr):
+        """Computing the non-zero components of the submatrix"""
+        ell = min(self.ell1, self.ell2)
+        m = np.arange(-ell, ell+1)
+
+        wigvals = np.zeros((2*ell+1, len(s_arr)))
+        for i in range(len(s_arr)):
+            wigvals[:, i] = w3j_vecm(self.ell1, s_arr[i], self.ell2, -m, 0*m, m)
+
+        Tsr = self.compute_Tsr(s_arr)
+        # wsr = np.load('wsr_pyro.npy')
+        wsr = np.loadtxt('wsr.dat')
+        prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)
+        omegaref = self.sup.omegaref
+        print(f"m = ({m.shape}); wigvals = ({wigvals.shape});")
+        print(f"prod_gammas = ({prod_gammas.shape}); Tsr = ({Tsr.shape})")
+        Tkernel = minus1pow_vec(m)[0] * 8*np.pi * omegaref *\
+            (wigvals[0] * prod_gammas)[:, NAX] * Tsr
+        return Tkernel
+
+
 
 
     def compute_Tsr(self, s_arr):

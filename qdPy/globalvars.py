@@ -27,7 +27,7 @@ class qdParams():
     # (Since we are using lmax = 300, 0.45*300 \approx 150)
 
     # defining the datatypes                                                                                                                                                             
-    rmin = 0.3
+    rmin = 0.0
     rmax = 1.2
     smax = 5
     fwindow = 150 
@@ -101,6 +101,7 @@ class globalVars():
 
         self.smax = smax
         self.fwindow = fwindow
+        print(f"smax = {self.smax}; fwindow = {self.fwindow}")
 
         # retaining only region between rmin and rmax
         self.r = self.mask_minmax(self.r)

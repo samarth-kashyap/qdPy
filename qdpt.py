@@ -16,7 +16,7 @@ DIRNAME_NEW = "w135_antia"
 
 T1 = time.time()
 
-GVAR = globalvars.globalVars(args=ARGS)
+GVAR = globalvars.globalVars(args=ARGS, smax=ARGS.smax, fwindow=ARGS.fwindow)
 # }}} global variables
 
 # creates new dir if it does not exist
@@ -150,11 +150,12 @@ def solve_eigprob():
 
 if __name__ == "__main__":
     spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
+    print(f"smax = {GVAR.smax}")
     analysis_modes = qdcls.qdptMode(GVAR, spline_dict)
     super_matrix = analysis_modes.create_supermatrix()
 
     # saving the supermatrix to compare with pyro
-    np.save('supmat_qdpt.npy', super_matrix.supmat)
+    np.save(f'supmat_qdpt_{GVAR.l0}.npy', super_matrix.supmat)
     
     fdpt, fqdpt = solve_eigprob()
 
@@ -175,9 +176,9 @@ if __name__ == "__main__":
     LOGGER.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
     LOGGER.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
-            f"qdpt_acoeffs_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_qdpt)
+            f"qdpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
-            f"dpt_acoeffs_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy", acoeffs_dpt)
+            f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_dpt)
 
     T2 = time.time()
     LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))
