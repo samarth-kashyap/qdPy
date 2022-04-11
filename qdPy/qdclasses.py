@@ -453,7 +453,9 @@ class subMatrix():
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
         #    [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         # wsr = np.load('wsr_pyro.npy')
-        wsr = np.loadtxt('wsr.dat')[:len(s_arr), 1:-1]
+        wsr = np.loadtxt(f'{self.sup.gvar.datadir}/w_s/wsr.mdi')[:len(s_arr), 1:-1] * (-1.0)
+        if len(s_arr) > 2:
+            wsr[2, :] *= 0.0
         # self.sup.spline_dict.get_wsr_from_Bspline()
         # wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0

@@ -19,3 +19,5 @@ qdPy.egg-info/
 __init__.py
 .DS_Store
 *~
+data_files
+output_files

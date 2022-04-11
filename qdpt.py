@@ -1,7 +1,8 @@
-B"""Computes the eigenfrequencies using QDPT and DPT"""
+"""Computes the eigenfrequencies using QDPT and DPT"""
 import logging
 import time
 import numpy as np
+import scipy as sp
 import qdPy.qdclasses as qdcls
 import qdPy.ritzlavely as RL
 from qdPy import globalvars
@@ -12,7 +13,7 @@ import os
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = FN.create_argparser()
-DIRNAME_NEW = "w135_antia"
+DIRNAME_NEW = "mdi"
 
 T1 = time.time()
 
@@ -147,6 +148,30 @@ def solve_eigprob():
 # }}} def solve_eigprob():
 
 
+# {{{ def get_eigvals_sortslice(supmat, type='QDPT'):
+def get_eigvals_sortslice(supmat, eigtype='QDPT'):
+    eigvals_list = []
+    if eigtype == 'DPT':
+        eigvals_all = np.diag(supmat)[:2*ARGS.l0+1]
+        return eigvals_all.real
+    elif eigtype == 'QDPT':
+        eigvals_all, eigvecs = sp.linalg.eigh(supmat)
+        eigbasis_sort = np.zeros(len(eigvals_all), dtype=np.int)
+        for i in range(len(eigvals_all)):
+            eigbasis_sort[i] = abs(eigvecs[i]).argmax()
+        return eigvals_all[eigbasis_sort].real[:2*ARGS.l0+1]
+# }}} get_eigvals_sortslice(supmat, type='QDPT')
+
+
+
+def supmat_acoeffs(supmat, eigtype='QDPT'):
+    _fqdpt = get_eigvals_sortslice(supmat, eigtype=eigtype)
+    _fqdpt *= GVAR.OM * 1e6
+    _fqdpt *= 1e3
+    _ac = get_RL_coeffs(_fqdpt)
+    return _ac
+    
+
 
 if __name__ == "__main__":
     spline_dict = w_Bsp.wsr_Bspline(GVAR)     # can access the coeffs through spline_dict.[c1,c3,c5]
@@ -179,6 +204,8 @@ if __name__ == "__main__":
             f"qdpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_dpt)
+    np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
+            f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy', super_matrix.supmat)
 
     T2 = time.time()
     LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))

@@ -49,7 +49,7 @@ class globalVars():
         self.local_dir = dirnames[0]
         self.scratch_dir = dirnames[1]
         self.snrnmais = dirnames[2]
-        self.datadir = f"{self.snrnmais}/data_files"
+        self.datadir = f"{self.scratch_dir}/data_files"
         self.outdir = f"{self.scratch_dir}/output_files"
         self.eigdir = f"{self.snrnmais}/eig_files"
         self.progdir = self.local_dir
