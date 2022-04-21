@@ -1,5 +1,6 @@
 """Class to handle QDPT computation"""
 import logging
+import os
 import numpy as np
 import py3nj
 from scipy.integrate import trapz as simps
@@ -10,6 +11,14 @@ from mpi4py import MPI
 import time
 
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+package_dir = os.path.dirname(current_dir)
+with open(f"{package_dir}/.config", "r") as f:
+    dirnames = f.read().splitlines()
+scratch_dir = dirnames[1]
+snrnmais_dir = dirnames[2]
+
+
 NAX = np.newaxis
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
 WFNAME = 'w_s/w.dat'
@@ -17,6 +26,15 @@ WFNAME = 'w_s/w.dat'
 # WFNAME = 'w_s/w_const_430.dat'
 # WFNAME = 'w_s/w_jesper.dat'  # to match with jesper's data
 LOGGER.info(f"Using velocity profile - {WFNAME}")
+        
+# -1 factor from definition of toroidal field
+WSR = np.loadtxt(f'{scratch_dir}/data_files/w_s/wsr.mdi')
+# for i in range(wsr.shape[0]):
+#     if i != 3:
+#         wsr[i, :] *= 0.0
+WSR[3:, :] = 1.0*WSR[3:, :]
+for i in range(WSR.shape[0]):
+    print(f"s = {2*i+1} | max(WSR) = {abs(WSR[i]).max():.5e}")
 
 
 def w3j(l1, l2, l3, m1, m2, m3):
@@ -108,7 +126,7 @@ class qdptMode:
         self.n0 = gvar.n0
         self.l0 = gvar.l0
         self.smax = gvar.smax
-        print(f"init qdptMode: smax = {self.smax}")
+        # print(f"init qdptMode: smax = {self.smax}")
         self.s_arr = np.arange(1, self.smax+2, 2)
         self.freq_window = gvar.fwindow
 
@@ -263,7 +281,7 @@ class superMatrix():
         self.nl_neighbors_idx = nl_neighbors_idx\
 
         self.smax = smax
-        print(f"init superMatrix: smax = {self.smax}")
+        # print(f"init superMatrix: smax = {self.smax}")
         self.s_arr = np.arange(1, self.smax+2, 2)
 
         # supermatix can be tiled with submatrices corresponding to
@@ -411,7 +429,7 @@ class subMatrix():
         """Fill the submatrix. For the chosen perturbation, the
         submatrix is a diagonal matrix.
         """
-        print(f"s_arr = {self.s_arr}")
+        # print(f"s_arr = {self.s_arr}")
         Cvec = self.get_Cvec(s_arr)
         if self.sup.gvar.args.use_precomputed:
             arg_str = f"{self.n1}.{self.ell1}-{self.n2}.{self.ell2}"
@@ -449,13 +467,12 @@ class subMatrix():
         Tsr = self.compute_Tsr(s_arr)
         np.save('Tsr.npy', Tsr)
         np.save('r.npy', self.sup.gvar.r)
-        # -1 factor from definition of toroidal field
+        # slicing wsr according to given smax 
+        wsr = WSR
+        wsr = wsr[:len(s_arr), 1:-1] * (-1.0)
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
         #    [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         # wsr = np.load('wsr_pyro.npy')
-        wsr = np.loadtxt(f'{self.sup.gvar.datadir}/w_s/wsr.mdi')[:len(s_arr), 1:-1] * (-1.0)
-        if len(s_arr) > 2:
-            wsr[2, :] *= 0.0
         # self.sup.spline_dict.get_wsr_from_Bspline()
         # wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0
