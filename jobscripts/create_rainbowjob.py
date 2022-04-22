@@ -40,7 +40,25 @@ source activate jaxpyro
 echo \"Finished at \"`date`
 """
 
+slurm_str = f"""#!/bin/bash                                                                  
+#SBATCH --job-name={jobname}                                                              
+#SBATCH --output=out-{jobname}.log                                                            
+#SBATCH --error=err-{jobname}.log
+#SBATCH --nodes=1                                                                             
+#SBATCH --ntasks-per-node=40                                                                  
+#SBATCH --mem=180G                                                                            
+#SBATCH --time=15:00:00                                                                       
+echo \"Starting at \"`date`                                                                   
+module purge                                                                                  
+module load anaconda3                                                                         
+conda activate jax-gpu                                                                        
+echo \"Starting at \"`date`                                                                   
+parallel --jobs 3 < {package_dir}/jobscripts/ipjobs_rainbow.sh                                
+echo \"Finished at \"`date`
+"""
+
 with open(f"{package_dir}/jobscripts/gnup_rainbow.pbs", "w") as f:
     f.write(gnup_str)
 
-
+with open(f"{package_dir}/jobscripts/gnup_rainbow.slurm", "w") as f:
+    f.write(slurm_str)

@@ -149,14 +149,16 @@ def solve_eigprob():
 
 
 # {{{ def get_eigvals_sortslice(supmat, type='QDPT'):
-def get_eigvals_sortslice(supmat, eigtype='QDPT'):
+def get_eigvals_sortslice(supmat, eigtype='QDPT', add_identity=False):
     eigvals_list = []
     if eigtype == 'DPT':
         eigvals_all = np.diag(supmat)[:2*ARGS.l0+1]
         return eigvals_all.real
     elif eigtype == 'QDPT':
+        if add_identity:
+            supmat = supmat + 1e-3 * np.identity(supmat.shape[0])
         eigvals_all, eigvecs = sp.linalg.eigh(supmat)
-        eigbasis_sort = np.zeros(len(eigvals_all), dtype=np.int)
+        eigbasis_sort = np.zeros(len(eigvals_all), dtype=int)
         for i in range(len(eigvals_all)):
             eigbasis_sort[i] = abs(eigvecs[i]).argmax()
         return eigvals_all[eigbasis_sort].real[:2*ARGS.l0+1]
@@ -180,13 +182,16 @@ if __name__ == "__main__":
     super_matrix = analysis_modes.create_supermatrix()
 
     # saving the supermatrix to compare with pyro
-    np.save(f'supmat_qdpt_{GVAR.l0}.npy', super_matrix.supmat)
+    # np.save(f'supmat_qdpt_{GVAR.l0}.npy', super_matrix.supmat)
     
     fdpt, fqdpt = solve_eigprob()
+    fqdpt_iden = get_eigvals_sortslice(super_matrix.supmat.real, add_identity=False)
+    fqdpt_iden = (analysis_modes.omega0 + fqdpt_iden/2/analysis_modes.omega0)
 
     # converting to muHz
     fdpt *= GVAR.OM * 1e6
     fqdpt *= GVAR.OM * 1e6
+    fqdpt_iden *= GVAR.OM * 1e6
 
     np.save(f'{GVAR.outdir}/{DIRNAME_NEW}/qdpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
     np.save(f'{GVAR.outdir}/{DIRNAME_NEW}/dpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
@@ -194,8 +199,10 @@ if __name__ == "__main__":
     # converting to nHz before computing splitting coefficients
     fdpt *= 1e3
     fqdpt *= 1e3
+    fqdpt_iden *= 1e3
 
     acoeffs_qdpt = get_RL_coeffs(fqdpt)
+    acoeffs_qdpt_iden = get_RL_coeffs(fqdpt_iden)
     acoeffs_dpt = get_RL_coeffs(fdpt)
 
     LOGGER.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
@@ -204,10 +211,41 @@ if __name__ == "__main__":
             f"qdpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_dpt)
-    np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
-            f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy', super_matrix.supmat)
+    # np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
+    #         f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy', super_matrix.supmat)
+
+    idx = np.where((GVAR.hmidata[:, 0]==ARGS.l0)*(GVAR.hmidata[:, 1]==ARGS.n0))[0][0]
+    ac_obs = GVAR.hmidata[idx, 12:48][::2]
+    ac_sig = GVAR.hmidata[idx, 48:84][::2]
+    ac_odd_qdpt = acoeffs_qdpt_iden[1::2]
+    ac_odd_dpt = acoeffs_dpt[1::2]
+    ac_diff = ac_odd_qdpt - ac_odd_dpt
+    ac_diff_bysig = (ac_odd_qdpt - ac_odd_dpt)/ac_sig[:len(ac_odd_dpt)]
+    obs_diff_bysig = (ac_odd_dpt - ac_obs[:len(ac_odd_dpt)])/ac_sig[:len(ac_odd_dpt)]
+    labels = ["s", "QDPT", "DPT", "Q - D", "(Q - D)/sig", "obs", "(obs - DPT)/sig"]
+    LOGGER.info(f" {labels[0]:^6} | {labels[1]:^15} | {labels[2]:^15} | {labels[3]:^15} | {labels[4]:^15} | {labels[5]:^15} | {labels[6]:^15}")
+    LOGGER.info("===========================================================================================================================")
+    for i in range(len(ac_odd_qdpt)):
+        LOGGER.info(f" {(2*i+1):^6d} | {ac_odd_qdpt[i]:15.6f} | {ac_odd_dpt[i]:15.6f} | {ac_diff[i]:15.6f} | {ac_diff_bysig[i]:15.6f} |" +
+                    f" {ac_obs[i]:15.6f} | {obs_diff_bysig[i]:^15.6f}")
+
+    LOGGER.info("===========================================================================================================================")
+    LOGGER.info("===========================================================================================================================")
+
+    ac_obs = GVAR.hmidata[idx, 12:48][1::2]
+    ac_sig = GVAR.hmidata[idx, 48:84][1::2]
+    ac_even_qdpt = acoeffs_qdpt_iden[0::2][1:]
+    ac_even_dpt = acoeffs_dpt[0::2][1:]
+    ac_diff = ac_even_qdpt - ac_even_dpt
+    ac_diff_bysig = (ac_even_qdpt - ac_even_dpt)/ac_sig[:len(ac_even_dpt)]
+    obs_diff_bysig = (ac_even_dpt - ac_obs[:len(ac_even_dpt)])/ac_sig[:len(ac_even_dpt)]
+    labels = ["s", "QDPT", "DPT", "Q - D", "(Q - D)/sig", "obs", "(obs - DPT)/sig"]
+    LOGGER.info(f" {labels[0]:^6} | {labels[1]:^15} | {labels[2]:^15} | {labels[3]:^15} | {labels[4]:^15} | {labels[5]:^15} | {labels[6]:^15}")
+    LOGGER.info("===========================================================================================================================")
+    for i in range(len(ac_even_qdpt)):
+        LOGGER.info(f" {(2*i+2):^6d} | {ac_even_qdpt[i]:15.6f} | {ac_even_dpt[i]:15.6f} | {ac_diff[i]:15.6f} | {ac_diff_bysig[i]:15.6f} |" +
+              f" {ac_obs[i]:15.6f} | {obs_diff_bysig[i]:^15.6f}")
 
     T2 = time.time()
     LOGGER.info("Time taken = {:7.2f} seconds".format((T2-T1)))
-    print("Time taken = {:7.2f} seconds".format((T2-T1)))
 
