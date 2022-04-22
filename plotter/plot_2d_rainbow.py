@@ -28,7 +28,6 @@ font = {'family' : 'normal',
         'weight' : 'normal',
         'size' : 18}  
 
-
 def get_distance(a1, a2, sig):
     diff_ratio = (a1 - a2)/sig
     return diff_ratio
