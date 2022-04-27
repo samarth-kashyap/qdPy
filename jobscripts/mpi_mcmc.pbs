@@ -11,9 +11,12 @@ export TERM=xterm
 echo $PBS_JOBID
 echo $PBS_NODEFILE
 
-EXECPATH="/home/g.samarth/qdPy/qdpt_sampler.py --n 0 --lmin 200 --lmax 240 --maxiter 500 --usempi"
-PYTHONPATH="/home/g.samarth/anaconda3/bin/python"
-MPIPATH="/home/g.samarth/anaconda3/bin/mpirun"
+module load anaconda3
+conda activate helio
+
+EXECPATH="/home/g.samarth/qdPy/qdpt_sampler.py --n 0 --lmin 200 --lmax 201 --maxiter 5 --usempi"
+PYTHONPATH="/home/g.samarth/.conda/envs/helio/bin/python"
+MPIPATH="/home/g.samarth/.conda/envs/helio/bin/mpirun"
 OUTFILE="/home/g.samarth/qdPy/jobscripts/pyout.log"
 ERRFILE="/home/g.samarth/qdPy/jobscripts/pyerr.log"
 
