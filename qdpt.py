@@ -18,7 +18,7 @@ DIRNAME_NEW = "mdi"
 T1 = time.time()
 
 GVAR = globalvars.globalVars(args=ARGS, smax=ARGS.smax, fwindow=ARGS.fwindow)
-# }}} global variables
+# }}} global variables 
 
 # creates new dir if it does not exist
 if(not os.path.isdir(f"{GVAR.outdir}/{DIRNAME_NEW}")):
