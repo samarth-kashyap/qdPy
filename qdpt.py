@@ -107,7 +107,7 @@ def get_RL_coeffs(delta_omega_nlm):
     acoeffs - np.ndarray(ndim=1, dtype=np.float)
         the RL coefficients.
     """
-    ritz_degree = min(ARGS.l0//2+1, 36)
+    ritz_degree = min(2*ARGS.l0, 36)
     rlp = RL.ritzLavelyPoly(ARGS.l0, ritz_degree)
     rlp.get_Pjl()
     acoeffs = rlp.get_coeffs(delta_omega_nlm)
@@ -208,11 +208,17 @@ if __name__ == "__main__":
     LOGGER.info("QDPT a-coeffs = {}".format(acoeffs_qdpt))
     LOGGER.info(" DPT a-coeffs = {}".format(acoeffs_dpt))
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
-            f"qdpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_qdpt)
+            f"qdpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax_wsr}.{ARGS.fwindow}." +
+            f"{ARGS.instr}.{ARGS.daynum}.npy", acoeffs_qdpt)
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
-            f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy", acoeffs_dpt)
-    # np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
-    #         f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy', super_matrix.supmat)
+            f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax_wsr}.{ARGS.fwindow}." +
+            f"{ARGS.instr}.{ARGS.daynum}.npy", acoeffs_dpt)
+    np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
+            f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy',
+            super_matrix.supmat)
+    np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
+            f'cenmult_nbs_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy',
+            analysis_modes.nl_neighbors)
 
     idx = np.where((GVAR.hmidata[:, 0]==ARGS.l0)*(GVAR.hmidata[:, 1]==ARGS.n0))[0][0]
     ac_obs = GVAR.hmidata[idx, 12:48][::2]

@@ -20,7 +20,7 @@ class ritzLavelyPoly():
 
     def __init__(self, ell, jmax):
         assert ell > 0, "Ritzwoller-Lavely polynomials don't exist for ell=0"
-        assert jmax + 1 <= 2*ell, "Max degree (jmax) should be smaller than 2*ell"
+        assert jmax <= 2*ell, "Max degree (jmax) should be smaller than 2*ell"
         self.ell = ell
         self.jmax = jmax + 1
         self.m = np.arange(-ell, ell+1) * 1.0

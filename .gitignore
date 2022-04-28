@@ -21,3 +21,5 @@ __init__.py
 *~
 data_files
 output_files
+wsr.*.72d.*.18
+*.sh
