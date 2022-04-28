@@ -7,7 +7,7 @@ from scipy.integrate import trapz as simps
 import scipy as sp
 import qdPy.functions as FN
 from tqdm import tqdm
-from mpi4py import MPI
+# from mpi4py import MPI
 import time
 
 
@@ -21,12 +21,13 @@ snrnmais_dir = dirnames[2]
 
 NAX = np.newaxis
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.ERROR)
-WFNAME = 'w_s/w.dat'
+# WFNAME = 'w_s/w.dat'
 # WFNAME = 'w_s/w_const.dat'
 # WFNAME = 'w_s/w_const_430.dat'
 # WFNAME = 'w_s/w_jesper.dat'  # to match with jesper's data
-LOGGER.info(f"Using velocity profile - {WFNAME}")
-        
+# LOGGER.info(f"Using velocity profile - {WFNAME}")
+
+'''        
 # -1 factor from definition of toroidal field
 WSR = np.loadtxt(f'{scratch_dir}/data_files/w_s/wsr.mdi')
 # for i in range(wsr.shape[0]):
@@ -35,7 +36,7 @@ WSR = np.loadtxt(f'{scratch_dir}/data_files/w_s/wsr.mdi')
 WSR[3:, :] = 1.0*WSR[3:, :]
 for i in range(WSR.shape[0]):
     print(f"s = {2*i+1} | max(WSR) = {abs(WSR[i]).max():.5e}")
-
+'''
 
 def w3j(l1, l2, l3, m1, m2, m3):
     """Computes the wigner-3j symbol for given l1, l2, l3, m1, m2, m3"""
@@ -126,6 +127,7 @@ class qdptMode:
         self.n0 = gvar.n0
         self.l0 = gvar.l0
         self.smax = gvar.smax
+        self.smax_wsr = gvar.smax_wsr
         # print(f"init qdptMode: smax = {self.smax}")
         self.s_arr = np.arange(1, self.smax+2, 2)
         self.freq_window = gvar.fwindow
@@ -350,7 +352,7 @@ class superMatrix():
         """Filling the supermatrix"""
         LOGGER.info("Creating submatrices for: ")
         # for i in tqdm(range(self.dim_blocks), desc=f'[Rank: {MPI.COMM_WORLD.Get_rank()}] Submatrices for l0={self.gvar.l0}'):
-        print(f"[Rank: {MPI.COMM_WORLD.Get_rank()}] Creating submatrices: ")
+        # print(f"[Rank: {MPI.COMM_WORLD.Get_rank()}] Creating submatrices: ")
         for i in range(self.dim_blocks):
             for ii in range(i, self.dim_blocks):
                 sm = subMatrix(i, ii, self, printinfo=True)
@@ -369,7 +371,7 @@ class superMatrix():
         for i in range(self.dim_blocks):
             sm = subMatrix(i, i, self)
             om2diff = self.omega_neighbors[i]**2 - self.omegaref**2
-            print(self.nl_neighbors[i,1], om2diff)
+            
             om2diff *= np.identity(sm.endx-sm.startx)
             self.supmat[sm.startx:sm.endx,
                         sm.starty:sm.endy] += om2diff
@@ -465,14 +467,23 @@ class subMatrix():
             # print(wigvals[-6:, i][::-1])
 
         Tsr = self.compute_Tsr(s_arr)
-        np.save('Tsr.npy', Tsr)
-        np.save('r.npy', self.sup.gvar.r)
         # slicing wsr according to given smax 
-        wsr = WSR
-        wsr = wsr[:len(s_arr), 1:-1] * (-1.0)
+        # wsr = WSR
+        # wsr = wsr[:len(s_arr), 1:-1] * (-1.0)
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
         #    [:, self.rmin_idx:self.rmax_idx] * (-1.0)
-        # wsr = np.load('wsr_pyro.npy')
+        # wsr = np.load('wsr_pyro_19.npy')[:, 1:-1]
+        wsr = np.loadtxt(f'wsr.{self.sup.gvar.instr}.72d.{self.sup.gvar.daynum}.18')[:, 1:-1]
+        
+        # setting all wsr beyond a specific smax_wsr to zero
+        wsr[self.sup.gvar.smax_wsr//2 + 1:] *= 0.0
+
+        print(f'Instrument: {self.sup.gvar.instr}, Daynum: {self.sup.gvar.daynum}.')
+        
+        '''
+        for sind in range(wsr.shape[0]):
+            print(f'Max w_{s_arr[sind]} = {np.max(np.abs(wsr[sind]))}')
+        '''
         # self.sup.spline_dict.get_wsr_from_Bspline()
         # wsr = self.sup.spline_dict.wsr
         # wsr[0, :] *= 0.0 # setting w1 = 0
@@ -509,8 +520,6 @@ class subMatrix():
         wsr = np.loadtxt('wsr.dat')
         prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)
         omegaref = self.sup.omegaref
-        print(f"m = ({m.shape}); wigvals = ({wigvals.shape});")
-        print(f"prod_gammas = ({prod_gammas.shape}); Tsr = ({Tsr.shape})")
         Tkernel = minus1pow_vec(m)[0] * 8*np.pi * omegaref *\
             (wigvals[0] * prod_gammas)[:, NAX] * Tsr
         return Tkernel

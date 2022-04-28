@@ -28,7 +28,6 @@ font = {'family' : 'normal',
         'weight' : 'normal',
         'size' : 18}  
 
-
 def get_distance(a1, a2, sig):
     diff_ratio = (a1 - a2)/sig
     return diff_ratio
@@ -70,16 +69,22 @@ for i in range(num_modes):
    
 colors_even = np.array(colors_even)
 colors_odd = np.array(colors_odd)
-max_even = max(abs(colors_even))
-max_odd = max(abs(colors_odd))
+max_even = abs(colors_even).max()
+max_odd = abs(colors_odd).max()
 
-fig1, ax1 = plt.subplots(figsize=(10, 5))
-im = ax1.imshow(colors_even, cmap='seismic', vmin=-max_even, vmax=max_even)
+cmapval = "seismic"
+fig1, ax1 = plt.subplots(figsize=(6, 4))
+im = ax1.imshow(colors_even, cmap=cmapval, vmin=-max_even, vmax=max_even,
+                aspect=colors_even.shape[1]/colors_even.shape[0], 
+                extent=[2, 36, lvals[-1], lvals[0]])
 ax1.set_title('Even a-coefficients')
 plt.colorbar(im, ax=ax1)
 
-fig2, ax2 = plt.subplots(figsize=(10, 5))
-im = ax2.imshow(colors_odd, cmap='seismic', vmin=-max_odd, vmax=max_odd)
-ax2.set_title('Odd a-coefficients')
-plt.colorbar(im, ax=ax2)
+
+fig1, ax1 = plt.subplots(figsize=(6, 4))
+im = ax1.imshow(colors_odd, cmap=cmapval, vmin=-max_even/20., vmax=max_even/20.,
+                aspect=colors_odd.shape[1]/colors_odd.shape[0], 
+                extent=[1, 35, lvals[-1], lvals[0]])
+ax1.set_title('Odd a-coefficients')
+plt.colorbar(im, ax=ax1)
 

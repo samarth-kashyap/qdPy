@@ -49,16 +49,12 @@ class globalVars():
         self.local_dir = dirnames[0]
         self.scratch_dir = dirnames[1]
         self.snrnmais = dirnames[2]
-        self.datadir = f"{self.scratch_dir}/data_files"
+        self.datadir = f"{self.snrnmais}/data_files"
         self.outdir = f"{self.scratch_dir}/output_files"
         self.eigdir = f"{self.snrnmais}/eig_files"
         self.progdir = self.local_dir
         self.hmidata = np.loadtxt(f"{self.snrnmais}/data_files/hmi.6328.36")
-
-        # self.datadir = dirnames[0]
-        # self.progdir = dirnames[1]
-        # self.eigdir = dirnames[2]
-
+        
         self.args = args
 
         # Frequency unit conversion factor (in Hz (cgs))
@@ -85,9 +81,7 @@ class globalVars():
         else:
             self.rmin = rmin
             self.rmax = rmax
-
-        print(f"rmax = {self.rmax}")
-
+            
         self.rmin_idx = self.get_idx(self.r, self.rmin) + 1
 
         # removing the grid point corresponding to r=0
@@ -99,21 +93,25 @@ class globalVars():
         self.rmax_idx = self.get_idx(self.r, self.rmax)
         # print(f"rmin index = {self.rmin_idx}; rmax index = {self.rmax_idx}")
 
-        self.smax = smax
-        self.fwindow = fwindow
-        print(f"smax = {self.smax}; fwindow = {self.fwindow}")
-
+        self.smax = self.args.smax
+        self.smax_wsr = self.args.smax_wsr
+        self.fwindow = self.args.fwindow
+        print(f"smax = {self.smax}; fwindow = {self.fwindow}, smax_wsr = {self.smax_wsr}")
+        
         # retaining only region between rmin and rmax
         self.r = self.mask_minmax(self.r)
-
+        
         # rth = r threshold beyond which the profiles are updated. 
         self.rth = rth
         
         self.fac_up = np.array([1.1, 2.0, 2.0])
         self.fac_lo = np.array([0.9, 0.0, 0.0])
-
+        
         self.n0 = args.n0
         self.l0 = args.l0
+        
+        self.instr = self.args.instr
+        self.daynum = self.args.daynum        
 
     def get_idx(self, arr, val):
         return abs(arr - val).argmin()
