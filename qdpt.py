@@ -13,7 +13,7 @@ import os
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = FN.create_argparser()
-DIRNAME_NEW = "mdi"
+DIRNAME_NEW = "hmi_allmodes"
 
 T1 = time.time()
 

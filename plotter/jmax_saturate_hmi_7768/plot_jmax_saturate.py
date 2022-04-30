@@ -1,5 +1,7 @@
 import numpy as np
 import scipy as sp
+import matplotlib.pyplot as plt
+
 import qdPy.ritzlavely as RL
 
 # {{{ def get_RL_coeffs(rlpObj, delta_omega_nlm):                                             
@@ -49,47 +51,48 @@ def plot_acoeff_saturation(ac_dpt, ac_qdpt, ac_sigma):
     # extracting the odd a-coefficients
     ac_odd_dpt = np.zeros((ac_dpt.shape[0], ac_dpt.shape[1]//2))
     ac_odd_qdpt = np.zeros((ac_dpt.shape[0], ac_dpt.shape[1]//2))
-    for i in range(1, len(ac_dpt), 2):
-        ac_odd_dpt[i] = ac_dpt[i, 1::2]
-        ac_odd_qdpt[i] = ac_qdpt[i, 1::2]
-
-    ac_odd_diff_relsigma = (ac_odd_qdpt - ac_odd_dpt)/ac_sigma[1::2]
+    for i in range(len(ac_dpt)):
+        ac_odd_dpt[i] = ac_dpt[i, ::2]
+        ac_odd_qdpt[i] = ac_qdpt[i, ::2]
+    
+    ac_odd_diff_relsigma = (ac_odd_qdpt - ac_odd_dpt)/ac_sigma[::2]
 
     # extracting the even a-coefficients
     ac_even_dpt = np.zeros((ac_dpt.shape[0], ac_dpt.shape[1]//2))
     ac_even_qdpt = np.zeros((ac_dpt.shape[0], ac_dpt.shape[1]//2))
-    for i in range(0, len(ac_dpt), 2):
-        ac_even_dpt[i] = ac_dpt[i, ::2]
-        ac_even_qdpt[i] = ac_qdpt[i, ::2]
-        
-    # excluding a0
-    ac_even_dpt = ac_even_dpt[:, 1:]
-    ac_even_qdpt = ac_even_qdpt[:, 1:]
+    for i in range(len(ac_dpt)):
+        ac_even_dpt[i] = ac_dpt[i, 1::2]
+        ac_even_qdpt[i] = ac_qdpt[i, 1::2]
     
-    ac_even_diff_relsigma = (ac_even_qdpt - ac_even_dpt)/ac_sigma[::2]
+    ac_even_diff_relsigma = (ac_even_qdpt - ac_even_dpt)/ac_sigma[1::2]
 
     # plotting the odd a-coefficients
     fig, ax = plt.subplots(1, 1)
 
     for i in range(len(ac_odd_dpt)):
-        jmin, jmax = 2*i + 1, 2*len(ac_odd_dpt) + 1
+        jmin, jmax = 2*i + 1, 2*len(ac_odd_dpt)
         j_axis = np.arange(jmin, jmax+1, 2)
-        
+
         plt.plot(j_axis, ac_odd_diff_relsigma[i:, i], label='$a_{%i}$'%(jmin))
 
+    plt.legend()
     plt.savefig('odd_acoeff_saturation.pdf')
+    plt.close()
 
     # plotting the even a-coefficients
     fig, ax = plt.subplots(1, 1)
     
-    for i in range(len(ac_even_dpt)):
+    for i in range(len(ac_even_dpt)-1):
         jmin, jmax = 2*(i+1), 2*len(ac_even_dpt)
         j_axis = np.arange(jmin, jmax+1, 2)
 
         plt.plot(j_axis, ac_even_diff_relsigma[i:, i], label='$a_{%i}$'%(jmin))
     
+    plt.legend()
     plt.savefig('even_acoeff_saturation.pdf')
+    plt.close()
     
+    return ac_odd_dpt, ac_odd_qdpt, ac_even_dpt, ac_even_qdpt
 
 def get_cenmult_freqs_dpt(supmat, omega_cnm, cenmult_nbs, jmax):
     """Returns the frequency splittings from dpt treatment.
@@ -107,6 +110,7 @@ if __name__=="__main__":
     supmat = np.load('supmat_qdpt_00.280.19.150.npy').real
     omega0 = np.load('cenmult_omega0.npy')
     cenmult_nbs = np.load('cenmult_nbs_00.280.19.150.npy')[:,1]
+    ac_sigma = np.load('ac_sigma.mdi.1216.npy')
 
     M_sol = 1.989e33 #gn,l = 0,200                                                    
     R_sol = 6.956e10 #cm                                                              
@@ -134,6 +138,9 @@ if __name__=="__main__":
         ac_dpt[jmax//2] = get_RL_coeffs(fdpt, omega0)
         ac_qdpt[jmax//2] = get_RL_coeffs(fqdpt, omega0)
 
-
-    ac_sigma = np.ones(ac_dpt.shape[1])        
-    plot_acoeff_saturation(ac_dpt, ac_qdpt, ac_sigma)
+    # rejecting the j=0 component
+    ac_dpt = ac_dpt[:, 1:]
+    ac_qdpt = ac_qdpt[:, 1:]
+        
+    ac_odd_dpt, ac_odd_qdpt, ac_even_dpt, ac_even_qdpt =\
+                            plot_acoeff_saturation(ac_dpt, ac_qdpt, ac_sigma)

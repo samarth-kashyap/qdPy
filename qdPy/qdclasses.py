@@ -478,7 +478,9 @@ class subMatrix():
         # setting all wsr beyond a specific smax_wsr to zero
         wsr[self.sup.gvar.smax_wsr//2 + 1:] *= 0.0
 
-        print(f'Instrument: {self.sup.gvar.instr}, Daynum: {self.sup.gvar.daynum}.')
+        # clipping off to allow multiplication with Tsr
+        wsr = wsr[:self.sup.gvar.smax_wsr//2 + 1]
+        
         
         '''
         for sind in range(wsr.shape[0]):
@@ -491,7 +493,9 @@ class subMatrix():
         # wsr[2, :] *= 0.0 # setting w5 = 0
         # wsr /= 2.0
         # integrand = Tsr * wsr * (self.sup.gvar.rho * self.sup.gvar.r**2)[NAX, :]
-        integrand = Tsr * wsr   # since U and V are scaled by sqrt(rho) * r
+        integrand = Tsr * wsr
+        # since U and V are scaled by sqrt(rho) * r
+        
         LOGGER.debug(" -- Max wsr = {}; Max integrand = {}"\
                      .format(abs(wsr).max(), abs(integrand).max()))
         LOGGER.debug(" -- wsr shape = {}; Tsr shape = {}"\
@@ -505,7 +509,7 @@ class subMatrix():
                     f"pc.{self.n1}.{self.ell1}-{self.n2}.{self.ell2}.npy", Cvec)
         return Cvec
 
-
+    '''
     def get_kernel(self, s_arr):
         """Computing the non-zero components of the submatrix"""
         ell = min(self.ell1, self.ell2)
@@ -517,13 +521,13 @@ class subMatrix():
 
         Tsr = self.compute_Tsr(s_arr)
         # wsr = np.load('wsr_pyro.npy')
-        wsr = np.loadtxt('wsr.dat')
+        # wsr = np.loadtxt('wsr.dat')
         prod_gammas = gamma(self.ell1) * gamma(self.ell2) * gamma(s_arr)
         omegaref = self.sup.omegaref
         Tkernel = minus1pow_vec(m)[0] * 8*np.pi * omegaref *\
             (wigvals[0] * prod_gammas)[:, NAX] * Tsr
         return Tkernel
-
+    '''
 
 
 
