@@ -193,8 +193,10 @@ if __name__ == "__main__":
     fqdpt *= GVAR.OM * 1e6
     fqdpt_iden *= GVAR.OM * 1e6
 
+    '''
     np.save(f'{GVAR.outdir}/{DIRNAME_NEW}/qdpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fqdpt)
     np.save(f'{GVAR.outdir}/{DIRNAME_NEW}/dpt_opt_{ARGS.n0:02d}_{ARGS.l0:03d}.npy', fdpt)
+    '''
 
     # converting to nHz before computing splitting coefficients
     fdpt *= 1e3
@@ -213,6 +215,7 @@ if __name__ == "__main__":
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax_wsr}.{ARGS.fwindow}." +
             f"{ARGS.instr}.{ARGS.daynum}.npy", acoeffs_dpt)
+    sys.exit()
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy',
             super_matrix.supmat)
