@@ -9,7 +9,7 @@ from qdPy import globalvars
 import qdPy.functions as FN
 import qdPy.w_Bsplines as w_Bsp
 import os
-
+import sys
 
 LOGGER = FN.create_logger_stream(__name__, 'logs/qdpt.log', logging.WARNING)
 ARGS = FN.create_argparser()

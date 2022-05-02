@@ -19,8 +19,8 @@ nl_arr = hmidata[:,:2].astype('int')
 fwindow = 150
 
 # j array
-smax_wsr_val = 9
-smax_val = 9
+smax_wsr_val = 11
+smax_val = 11
 
 instrument = 'hmi'
 daynum = 7768
