@@ -48,7 +48,7 @@ font = {'family' : 'normal',
 # to calculate how many a-coefficients are significantly different
 def get_distance(a1, a2, sig):
     diff_ratio = abs(a1 - a2)/sig
-    mask1 = diff_ratio > 1.0/np.sqrt(5)
+    mask1 = diff_ratio > 1.0 # 1.0/np.sqrt(5)
     return mask1.sum()
 
 # arrays for plotting

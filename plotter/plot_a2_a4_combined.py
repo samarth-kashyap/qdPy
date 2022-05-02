@@ -104,26 +104,16 @@ colors_odd = colors_odd[1:, :jmax]
 
 colors_even = np.array(colors_even)
 colors_odd = np.array(colors_odd)
-max_even = abs(colors_even).max()
-max_odd = abs(colors_odd).max()
 
-cmapval = "seismic"
-fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+plt.figure()
 
-im1 = ax[0].imshow(colors_even, cmap=cmapval, vmin=-max_even, vmax=max_even,
-                   aspect=colors_even.shape[1]/colors_even.shape[0], 
-                   extent=[1, jmax, lvals[-1], lvals[0]])
-ax[0].set_title('Even $a$-coefficients', fontsize=16)
-ax[0].set_xlabel('$j$', fontsize=16)
-ax[0].set_ylabel('$\ell$', fontsize=16)
-plt.colorbar(im1, ax=ax[0])
-
-im2 = ax[1].imshow(colors_odd, cmap=cmapval, vmin=-max_odd, vmax=max_odd,
-                   aspect=colors_odd.shape[1]/colors_odd.shape[0], 
-                   extent=[1, jmax, lvals[-1], lvals[0]])
-ax[1].set_title('Odd $a$-coefficients', fontsize=16)
-ax[1].set_xlabel('$j$', fontsize=16)
-ax[1].set_ylabel('$\ell$', fontsize=16)
-plt.colorbar(im2, ax=ax[1])
-plt.tight_layout()
-plt.savefig(f'2D_rainbow_n{ARGS.n0}.pdf')
+plt.plot(lvals, colors_even[:, 1], label='$s = 2$')
+plt.plot(lvals, colors_even[:, 3], label='$s = 4$')
+plt.fill_between(lvals, np.ones_like(lvals), -np.ones_like(lvals),
+                 hatch = '/', facecolor='w')
+plt.xlabel('$\ell$', fontsize=16)
+plt.ylabel('$\\frac{a_s^{\mathrm{QDPT}} - a_s^{\mathrm{DPT}}}{\sigma(a_s)}$', fontsize=16)
+plt.xlim([np.min(lvals), np.max(lvals)])
+plt.grid(True, alpha=0.5)
+plt.legend()
+plt.savefig('a2_a4_combined.pdf')

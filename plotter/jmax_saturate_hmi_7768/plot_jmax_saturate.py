@@ -74,7 +74,8 @@ def plot_acoeff_saturation(ac_dpt, ac_qdpt, ac_sigma):
         j_axis = np.arange(jmin, jmax+1, 2)
 
         plt.plot(j_axis, ac_odd_diff_relsigma[i:, i], label='$a_{%i}$'%(jmin))
-
+        
+    plt.ylim([-1,1])
     plt.legend()
     plt.savefig('odd_acoeff_saturation.pdf')
     plt.close()
@@ -110,7 +111,7 @@ if __name__=="__main__":
     supmat = np.load('supmat_qdpt_00.280.19.150.npy').real
     omega0 = np.load('cenmult_omega0.npy')
     cenmult_nbs = np.load('cenmult_nbs_00.280.19.150.npy')[:,1]
-    ac_sigma = np.load('ac_sigma.mdi.1216.npy')
+    ac_sigma = np.load('ac_sigma.hmi.7768.npy')
 
     M_sol = 1.989e33 #gn,l = 0,200                                                    
     R_sol = 6.956e10 #cm                                                              

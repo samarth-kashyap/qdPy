@@ -215,14 +215,15 @@ if __name__ == "__main__":
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f"dpt-ac-{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax_wsr}.{ARGS.fwindow}." +
             f"{ARGS.instr}.{ARGS.daynum}.npy", acoeffs_dpt)
-    sys.exit()
+    
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f'supmat_qdpt_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy',
             super_matrix.supmat)
+    
     np.save(f"{GVAR.outdir}/{DIRNAME_NEW}/" +
             f'cenmult_nbs_{ARGS.n0:02d}.{ARGS.l0:03d}.{ARGS.smax}.{ARGS.fwindow}.npy',
             analysis_modes.nl_neighbors)
-
+    sys.exit()
     idx = np.where((GVAR.hmidata[:, 0]==ARGS.l0)*(GVAR.hmidata[:, 1]==ARGS.n0))[0][0]
     ac_obs = GVAR.hmidata[idx, 12:48][::2]
     ac_sig = GVAR.hmidata[idx, 48:84][::2]
