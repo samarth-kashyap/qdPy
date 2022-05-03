@@ -139,6 +139,9 @@ if __name__=="__main__":
         ac_dpt[jmax//2] = get_RL_coeffs(fdpt, omega0)
         ac_qdpt[jmax//2] = get_RL_coeffs(fqdpt, omega0)
 
+        np.save(f'dpt-ac-00.280.{jmax}.150.hmi.7768.npy', ac_dpt[jmax//2])
+        np.save(f'qdpt-ac-00.280.{jmax}.150.hmi.7768.npy', ac_qdpt[jmax//2])
+
     # rejecting the j=0 component
     ac_dpt = ac_dpt[:, 1:]
     ac_qdpt = ac_qdpt[:, 1:]

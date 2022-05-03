@@ -473,7 +473,8 @@ class subMatrix():
         # wsr = np.loadtxt(f'{self.sup.gvar.datadir}/{WFNAME}')\
         #    [:, self.rmin_idx:self.rmax_idx] * (-1.0)
         # wsr = np.load('wsr_pyro_19.npy')[:, 1:-1]
-        wsr = np.loadtxt(f'wsr.{self.sup.gvar.instr}.72d.{self.sup.gvar.daynum}.18')[:, 1:-1]
+        # wsr = np.loadtxt(f'wsr.{self.sup.gvar.instr}.72d.{self.sup.gvar.daynum}.18')[:, 1:-1]
+        wsr = np.loadtxt(f'wsr.{self.sup.gvar.instr}.72d.{self.sup.gvar.daynum}.{self.sup.gvar.smax_wsr}')[:, 1:-1]
         
         # setting all wsr beyond a specific smax_wsr to zero
         wsr[self.sup.gvar.smax_wsr//2 + 1:] *= 0.0
